@@ -37,6 +37,8 @@ export default function Dashboard() {
     const fetchIssues = async () => {
       try {
         const res = await API.get("/issues");
+      
+        console.log("🔥 API DATA:", res.data);
 
         const sorted = res.data.sort(
           (a: any, b: any) =>

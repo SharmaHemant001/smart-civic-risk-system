@@ -44,14 +44,9 @@ export default function RouteInput({ setRoute, setRouteIssues }) {
 
       setRoute(routeData);
 
-      const res = await API.post("/issues/route", {
-        routeCoordinates: [
-          { lat: startCoords.lat, lng: startCoords.lon },
-          { lat: endCoords.lat, lng: endCoords.lon },
-        ],
-      });
+    setRouteIssues([]); 
 
-      setRouteIssues(res.data);
+
     } catch (err) {
       console.error(err);
       alert("Route failed");
