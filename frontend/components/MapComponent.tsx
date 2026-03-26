@@ -275,7 +275,7 @@ export default function MapComponent({
       >
         <FixMapResize />
 <TileLayer
-  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+  url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"
   attribution="© OpenStreetMap contributors"
 />
 
