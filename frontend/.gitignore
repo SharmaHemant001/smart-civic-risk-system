@@ -47,9 +47,6 @@ uploads/*
 backend/uploads/
 
 # env
-backend/.env
 
-# python cache
-__pycache__/
-*.pyc
+backend/.env
 
