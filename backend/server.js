@@ -33,11 +33,7 @@ const connectDB = async () => {
 /* =====================================
    ✅ MIDDLEWARE
 ===================================== */
-app.use(cors({
-  origin: "http://localhost:3000",
-  methods: ["GET", "POST", "PATCH"],
-  credentials: true
-}));
+app.use(cors());
 
 app.use(express.json());
 
