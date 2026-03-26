@@ -12,7 +12,18 @@ import MarkerPopup from "./MarkerPopup";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useEffect, useRef, useState } from "react";
-import { Fenix } from "next/font/google";
+
+// ✅ FIX Leaflet icons (IMPORTANT for production)
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl:
+    "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png",
+  iconUrl:
+    "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png",
+  shadowUrl:
+    "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
+});
 
 type Issue = {
   _id: string;
@@ -25,10 +36,8 @@ type Props = {
   issues: Issue[];
   route?: any;
   routeIssues?: any[];
-  selectedIssue?: any; // ✅ NEW
+  selectedIssue?: any;
 };
-
-delete (L.Icon.Default.prototype as any)._getIconUrl;
 
 // 🔴 ROUTE MARKER
 const routeIcon = new L.DivIcon({
@@ -231,23 +240,26 @@ function Routing({ route, routeIssues }: any) {
     </>
   );
 }
+
+// 🔥 FIX MAP RESIZE
 function FixMapResize() {
   const map = useMap();
 
   useEffect(() => {
     setTimeout(() => {
-      map.invalidateSize(); // 🔥 KEY FIX
+      map.invalidateSize();
     }, 200);
   }, [map]);
 
   return null;
 }
+
 // ✅ MAIN MAP
 export default function MapComponent({
   issues,
   route,
   routeIssues = [],
-  selectedIssue, // ✅ NEW
+  selectedIssue,
 }: Props) {
   return (
     <div className="absolute inset-0 overflow-hidden">
@@ -259,22 +271,22 @@ export default function MapComponent({
         preferCanvas={true}
         zoomAnimation={true}
         fadeAnimation={true}
+        scrollWheelZoom={true} // ✅ FIX ADDED
       >
-      < FixMapResize />
+        <FixMapResize />
+
         <TileLayer
-  url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-  attribution="© OpenStreetMap & CARTO"
-/>
+          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+          attribution="© OpenStreetMap & CARTO"
+        />
 
         <ZoomControl position="bottomright" />
 
-        {/* 🔥 FOCUS FEATURE */}
         {selectedIssue && <FocusMap issue={selectedIssue} />}
 
         {!route && <Heatmap issues={issues} />}
         {route && <Routing route={route} routeIssues={routeIssues} />}
 
-        {/* 📍 MARKERS */}
         {issues.map((issue) => {
           const lat = Number(issue.latitude);
           const lon = Number(issue.longitude);
@@ -284,8 +296,7 @@ export default function MapComponent({
             (ri) => ri._id.toString() === issue._id.toString()
           );
 
-          const isSelected =
-            selectedIssue?._id === issue._id;
+          const isSelected = selectedIssue?._id === issue._id;
 
           return (
             <Marker
