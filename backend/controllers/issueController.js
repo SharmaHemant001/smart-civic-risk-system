@@ -1,3 +1,11 @@
+import Issue from "../models/Issue.js";
+import { checkDuplicate } from "../services/duplicateService.js";
+import { calculateRisk } from "../services/riskService.js";
+import User from "../models/User.js";
+
+/* =========================
+   🚀 UPLOAD ISSUE
+========================= */
 export const uploadIssue = async (req, res) => {
   const expiresAt = new Date();
   expiresAt.setHours(expiresAt.getHours() + 48);
@@ -7,8 +15,8 @@ export const uploadIssue = async (req, res) => {
 
     const imageUrl = req.body.imageUrl || null;
 
-    // ✅ FIXED IMAGE PATH
-    const baseUrl = process.env.BASE_URL;
+    // ✅ FIXED BASE URL
+    const baseUrl = process.env.BASE_URL || "http://localhost:5000";
 
     const imagePath = req.file
       ? `${baseUrl}/${req.file.path.replace(/\\/g, "/")}`
@@ -20,12 +28,14 @@ export const uploadIssue = async (req, res) => {
 
     const user = await User.findOne();
 
+    // 🚫 LOW REPUTATION BLOCK
     if (user && user.reputationScore < -5) {
       return res.status(403).json({
         error: "Low reputation. Cannot report issues.",
       });
     }
 
+    // 🔁 DUPLICATE CHECK
     const existingIssue = await checkDuplicate(
       latitude,
       longitude,
@@ -47,6 +57,7 @@ export const uploadIssue = async (req, res) => {
       });
     }
 
+    // 🆕 CREATE ISSUE
     const riskScore = calculateRisk(issueType, 1);
 
     const newIssue = await Issue.create({
@@ -65,6 +76,87 @@ export const uploadIssue = async (req, res) => {
 
   } catch (error) {
     console.error("UPLOAD ERROR:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+/* =========================
+   📥 GET ISSUES
+========================= */
+export const getIssues = async (req, res) => {
+  try {
+    const issues = await Issue.find().sort({ createdAt: -1 });
+    res.json(issues);
+  } catch (error) {
+    console.error("GET ISSUES ERROR:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+/* =========================
+   👍 VOTE ISSUE
+========================= */
+export const voteIssue = async (req, res) => {
+  try {
+    const issue = await Issue.findById(req.params.id);
+
+    if (!issue) {
+      return res.status(404).json({ message: "Issue not found" });
+    }
+
+    issue.votes += 1;
+    issue.riskScore = calculateRisk(issue.issueType, issue.votes);
+
+    await issue.save();
+
+    res.json(issue);
+  } catch (error) {
+    console.error("VOTE ERROR:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+/* =========================
+   🚗 UPDATE STATUS
+========================= */
+export const updateStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+
+    const issue = await Issue.findById(req.params.id);
+
+    if (!issue) {
+      return res.status(404).json({ message: "Issue not found" });
+    }
+
+    if (issue.status === status) {
+      return res.json(issue);
+    }
+
+    if (issue.status === "resolved") {
+      return res.json(issue);
+    }
+
+    issue.status = status;
+
+    if (status === "resolved") {
+      issue.resolvedAt = new Date();
+
+      if (issue.reportedBy) {
+        const user = await User.findById(issue.reportedBy);
+        if (user) {
+          user.reputationScore += 1;
+          await user.save();
+        }
+      }
+    }
+
+    await issue.save();
+
+    res.json(issue);
+
+  } catch (error) {
+    console.error("STATUS UPDATE ERROR:", error);
     res.status(500).json({ message: error.message });
   }
 };
