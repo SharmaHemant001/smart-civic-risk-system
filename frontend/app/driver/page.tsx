@@ -72,13 +72,24 @@ export default function DriverPage() {
   /* =====================================
      🔥 FILTER ROUTE ISSUES
   ===================================== */
-  const displayIssues = useMemo(() => {
-    const base = route ? routeIssues : [];
-
+   const displayIssues = useMemo(() => {
+  // 🔥 if route exists → show route issues
+  if (route) {
     return filter
-      ? base.filter((i) => i.issueType === filter)
-      : base;
-  }, [route, routeIssues, filter]);
+      ? routeIssues.filter((i) => i.issueType === filter)
+      : routeIssues;
+  }
+
+  // 🔥 if coming from dashboard → show selected issue
+  if (selectedIssue) {
+    return [selectedIssue];
+  }
+
+  return [];
+}, [route, routeIssues, filter, selectedIssue]);
+
+
+
 
   return (
     <div className="relative w-full h-full">
@@ -113,7 +124,7 @@ export default function DriverPage() {
       {/* 🗺️ MAP */}
       <div className="h-full w-full">
         <MapComponent
-          issues={issues}                 // all issues
+          issues={route ? issues : displayIssues}                 // all issues
           route={route}
           routeIssues={displayIssues}
           setRouteIssues={setRouteIssues}

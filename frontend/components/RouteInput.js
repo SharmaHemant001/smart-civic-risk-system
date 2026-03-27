@@ -1,8 +1,6 @@
-
 "use client";
 
 import { useState } from "react";
-import API from "../utils/api";
 
 export default function RouteInput({ setRoute, setRouteIssues }) {
   const [start, setStart] = useState("");
@@ -11,8 +9,9 @@ export default function RouteInput({ setRoute, setRouteIssues }) {
 
   const getCoordinates = async (place) => {
     const res = await fetch(
-      `https://nominatim.openstreetmap.org/search?format=json&q=${place}`
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(place)}`
     );
+
     const data = await res.json();
 
     if (!data || data.length === 0) {
@@ -37,61 +36,51 @@ export default function RouteInput({ setRoute, setRouteIssues }) {
       const startCoords = await getCoordinates(start);
       const endCoords = await getCoordinates(end);
 
-      const routeData = {
+      setRoute({
         start: startCoords,
         end: endCoords,
-      };
+      });
 
-      setRoute(routeData);
-
-    setRouteIssues([]); 
-
+      setRouteIssues([]); // reset
 
     } catch (err) {
       console.error(err);
-      alert("Route failed");
+      alert("Route failed. Try valid location names.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div
-      className="absolute top-6 right-6 z-[1000] w-80
+    <div className="absolute top-6 right-6 z-[1000] w-80
                  bg-black/70 backdrop-blur-xl text-white
                  border border-white/10
-                 shadow-[0_10px_40px_rgba(0,0,0,0.6)]
-                 rounded-2xl p-5 space-y-4
-                 hover:scale-[1.01] transition"
-    >
-      {/* 🔥 Title */}
-      <h2 className="text-sm font-semibold text-white flex items-center gap-2">
-        🚗 Route Planner
-      </h2>
+                 shadow-xl rounded-2xl p-5 space-y-4">
 
-      {/* 📍 Start */}
+      <h2 className="text-sm font-semibold">🚗 Route Planner</h2>
+
       <input
         type="text"
         placeholder="Start location"
+        value={start}
+        onChange={(e) => setStart(e.target.value)}
         className="w-full px-3 py-2 rounded-lg
                    bg-white/10 text-white placeholder-gray-400
                    border border-white/20
                    focus:outline-none focus:ring-2 focus:ring-blue-500"
-        onChange={(e) => setStart(e.target.value)}
       />
 
-      {/* 📍 End */}
       <input
         type="text"
         placeholder="Destination"
+        value={end}
+        onChange={(e) => setEnd(e.target.value)}
         className="w-full px-3 py-2 rounded-lg
                    bg-white/10 text-white placeholder-gray-400
                    border border-white/20
                    focus:outline-none focus:ring-2 focus:ring-blue-500"
-        onChange={(e) => setEnd(e.target.value)}
       />
 
-      {/* 🚀 Button */}
       <button
         onClick={handleRoute}
         disabled={loading}
@@ -106,4 +95,3 @@ export default function RouteInput({ setRoute, setRouteIssues }) {
     </div>
   );
 }
-
