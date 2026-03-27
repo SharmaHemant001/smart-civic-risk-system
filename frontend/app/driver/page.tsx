@@ -101,13 +101,6 @@ const memoMap = useMemo(() => {
       )}
          
 
-       { !route && (
-        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-[1000]
-                        bg-indigo-500 text-white px-5 py-2 rounded-xl shadow-lg">
-                  🚗 Enter route
-        </div>
-      )}
-
 
       {/* 🗺️ MAP */}
       <div className="h-full w-full">

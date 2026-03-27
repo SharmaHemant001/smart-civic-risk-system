@@ -93,7 +93,7 @@ function Routing({ route, issues, setRouteIssues }: any) {
             const dy = issue.longitude - point.lng;
             const dist = Math.sqrt(dx * dx + dy * dy);
 
-            if (dist < 0.01) {
+            if (dist < 0.2) {
               nearbyIssues.push(issue);
             }
           });
