@@ -13,7 +13,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useEffect, useRef, useState } from "react";
 
-// ✅ FIX Leaflet icons (IMPORTANT for production)
+// ✅ FIX Leaflet icons
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 
 L.Icon.Default.mergeOptions({
@@ -36,37 +36,34 @@ type Props = {
   issues: Issue[];
   route?: any;
   routeIssues?: any[];
+  setRouteIssues?: any; // ✅ NEW
   selectedIssue?: any;
 };
 
 // 🔴 ROUTE MARKER
 const routeIcon = new L.DivIcon({
   className: "",
-  html: `
-    <div style="
+  html: `<div style="
       width:16px;
       height:16px;
       background:#ef4444;
       border-radius:50%;
       border:3px solid white;
       box-shadow:0 0 12px #ef4444;
-    "></div>
-  `,
+    "></div>`,
 });
 
 // 🟢 SELECTED MARKER
 const selectedIcon = new L.DivIcon({
   className: "",
-  html: `
-    <div style="
+  html: `<div style="
       width:18px;
       height:18px;
       background:#22c55e;
       border-radius:50%;
       border:3px solid white;
       box-shadow:0 0 14px #22c55e;
-    "></div>
-  `,
+    "></div>`,
 });
 
 // 🔥 FOCUS MAP
@@ -86,43 +83,8 @@ function FocusMap({ issue }: any) {
   return null;
 }
 
-// 🔥 HEATMAP
-function Heatmap({ issues }: { issues: Issue[] }) {
-  const map = useMap();
-
-  useEffect(() => {
-    if (!issues.length) return;
-
-    let heatLayer: any;
-
-    const loadHeat = async () => {
-      await import("leaflet.heat");
-
-      const heatData = issues.map((i) => [
-        Number(i.latitude),
-        Number(i.longitude),
-        i.riskScore === "High" ? 0.8 : i.riskScore === "Medium" ? 0.5 : 0.2,
-      ]);
-
-      heatLayer = (L as any).heatLayer(heatData, {
-        radius: 20,
-        blur: 18,
-        maxZoom: 17,
-      }).addTo(map);
-    };
-
-    loadHeat();
-
-    return () => {
-      if (heatLayer) map.removeLayer(heatLayer);
-    };
-  }, [issues, map]);
-
-  return null;
-}
-
-// 🚗 ROUTING
-function Routing({ route, routeIssues }: any) {
+// 🔥 ROUTING (UPDATED)
+function Routing({ route, issues, setRouteIssues }: any) {
   const map = useMap();
   const hasZoomed = useRef(false);
   const [segments, setSegments] = useState<any[]>([]);
@@ -157,13 +119,40 @@ function Routing({ route, routeIssues }: any) {
 
       routingControl.on("routesfound", (e: any) => {
         const coords = e.routes[0].coordinates;
+
+        // 🔥 NEW: DETECT ISSUES ON ROUTE
+        const nearbyIssues: any[] = [];
+
+        coords.forEach((point: any) => {
+          issues.forEach((issue: any) => {
+            const dx = issue.latitude - point.lat;
+            const dy = issue.longitude - point.lng;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist < 0.01) {
+              nearbyIssues.push(issue);
+            }
+          });
+        });
+
+        // REMOVE DUPLICATES
+        const uniqueIssues = Array.from(
+          new Map(nearbyIssues.map((i) => [i._id, i])).values()
+        );
+
+        // 🔥 UPDATE DRIVER PAGE STATE
+        if (setRouteIssues) {
+          setRouteIssues(uniqueIssues);
+        }
+
+        // 🔥 SEGMENT COLORING
         const segs = [];
 
         for (let i = 0; i < coords.length - 1; i++) {
           const start = coords[i];
           const end = coords[i + 1];
 
-          const nearby = routeIssues?.filter((issue: any) => {
+          const nearby = uniqueIssues.filter((issue: any) => {
             const dx = issue.latitude - start.lat;
             const dy = issue.longitude - start.lng;
             const dist = Math.sqrt(dx * dx + dy * dy);
@@ -172,9 +161,9 @@ function Routing({ route, routeIssues }: any) {
 
           let risk = "low";
 
-          if (nearby?.some((i: any) => i.riskScore === "High"))
+          if (nearby.some((i: any) => i.riskScore === "High"))
             risk = "high";
-          else if (nearby?.some((i: any) => i.riskScore === "Medium"))
+          else if (nearby.some((i: any) => i.riskScore === "Medium"))
             risk = "medium";
 
           segs.push({
@@ -210,7 +199,7 @@ function Routing({ route, routeIssues }: any) {
         mapAny._routingControl = null;
       }
     };
-  }, [route, map, routeIssues]);
+  }, [route, map, issues, setRouteIssues]);
 
   return (
     <>
@@ -241,24 +230,12 @@ function Routing({ route, routeIssues }: any) {
   );
 }
 
-// 🔥 FIX MAP RESIZE
-function FixMapResize() {
-  const map = useMap();
-
-  useEffect(() => {
-    setTimeout(() => {
-      map.invalidateSize();
-    }, 200);
-  }, [map]);
-
-  return null;
-}
-
 // ✅ MAIN MAP
 export default function MapComponent({
   issues,
   route,
   routeIssues = [],
+  setRouteIssues,
   selectedIssue,
 }: Props) {
   return (
@@ -268,31 +245,31 @@ export default function MapComponent({
         zoom={12}
         zoomControl={false}
         className="w-full h-full"
-        preferCanvas={true}
-        zoomAnimation={true}
-        fadeAnimation={true}
-        scrollWheelZoom={true} // ✅ FIX ADDED
       >
-        <FixMapResize />
-<TileLayer
-  url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"
-  attribution="© OpenStreetMap contributors"
-/>
+        <TileLayer
+          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"
+        />
 
         <ZoomControl position="bottomright" />
 
         {selectedIssue && <FocusMap issue={selectedIssue} />}
 
-        {!route && <Heatmap issues={issues} />}
-        {route && <Routing route={route} routeIssues={routeIssues} />}
+        {route && (
+          <Routing
+            route={route}
+            issues={issues}
+            setRouteIssues={setRouteIssues}
+          />
+        )}
 
         {issues.map((issue) => {
           const lat = Number(issue.latitude);
           const lon = Number(issue.longitude);
+
           if (isNaN(lat) || isNaN(lon)) return null;
 
           const isOnRoute = routeIssues.some(
-            (ri) => ri._id.toString() === issue._id.toString()
+            (ri) => ri._id === issue._id
           );
 
           const isSelected = selectedIssue?._id === issue._id;
@@ -306,18 +283,8 @@ export default function MapComponent({
                   ? selectedIcon
                   : isOnRoute
                   ? routeIcon
-                  : new L.DivIcon({
-                      className: "",
-                      html: `<div style="
-                        width:8px;
-                        height:8px;
-                        background:#6b7280;
-                        border-radius:50%;
-                        opacity:0.4;
-                      "></div>`,
-                    })
+                  : undefined
               }
-              zIndexOffset={1000}
             >
               <MarkerPopup issue={issue} />
             </Marker>
