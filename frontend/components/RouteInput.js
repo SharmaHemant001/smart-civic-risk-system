@@ -9,7 +9,12 @@ export default function RouteInput({ setRoute, setRouteIssues }) {
 
   const getCoordinates = async (place) => {
     const res = await fetch(
-      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(place)}`
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(place)}`,
+      {
+        headers: {
+          "User-Agent": "Civic-risk-system",
+        },
+      }
     );
 
     const data = await res.json();
