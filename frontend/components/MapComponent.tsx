@@ -63,10 +63,13 @@ function Routing({ route, issues, setRouteIssues }: any) {
       const mapAny = map as any;
 
       if (mapAny._routingControl) {
-        map.removeControl(mapAny._routingControl);
-        mapAny._routingControl = null;
-      }
-
+  try {
+    map.removeControl(mapAny._routingControl);
+  } catch (e) {
+    console.warn("Routing cleanup skipped");
+  }
+  mapAny._routingControl = null;
+}
       const routingControl = (L as any).Routing.control({
         waypoints: [
           L.latLng(route.start.lat, route.start.lon),
@@ -225,14 +228,18 @@ export default function MapComponent({
   }, []);
 
   return (
-    <div className="w-full h-full">
+    <div className="w-full h-full overflow-hidden rounded-2xl">
       <MapContainer
         center={[28.6139, 77.209]}
         zoom={12}
         zoomControl={false}
         className="w-full h-full"
+        preferCanvas={true}
       >
-        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+       <TileLayer
+  url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+  attribution="© OpenStreetMap & CARTO"
+/>
 
         <ZoomControl position="bottomright" />
 
