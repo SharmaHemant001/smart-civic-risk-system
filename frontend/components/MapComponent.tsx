@@ -26,6 +26,7 @@ type Props = {
   routeIssues?: any[];
   setRouteIssues?: any;
   selectedIssue?: any;
+  mode?: "driver" | "dashboard";
 };
 
 // 🔥 FOCUS MAP
@@ -198,6 +199,7 @@ export default function MapComponent({
   routeIssues = [],
   setRouteIssues,
   selectedIssue,
+  mode = "dashboard",
 }: Props) {
   // ✅ FIX ICONS INSIDE COMPONENT
   const routeIcon = useRef(
@@ -253,7 +255,7 @@ export default function MapComponent({
           />
         )}
 
-        {issues.map((issue) => {
+        {(mode === "driver" ? routeIssues : issues).map((issue) => {
           const lat = Number(issue.latitude);
           const lon = Number(issue.longitude);
           if (isNaN(lat) || isNaN(lon)) return null;
@@ -280,6 +282,7 @@ export default function MapComponent({
             </Marker>
           );
         })}
+        
       </MapContainer>
     </div>
   );
