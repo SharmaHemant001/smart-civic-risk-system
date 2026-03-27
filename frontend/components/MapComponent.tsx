@@ -239,7 +239,7 @@ export default function MapComponent({
   selectedIssue,
 }: Props) {
   return (
-    <div className="absolute inset-0 overflow-hidden">
+    <div className="absolute inset-0 overflow-hidden h-full w-full">
       <MapContainer
         center={[28.6139, 77.209]}
         zoom={12}
