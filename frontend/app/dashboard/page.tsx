@@ -1,10 +1,15 @@
 "use client";
+import dynamic from "next/dynamic";
+
+const MapComponent = dynamic(
+  () => import("@/components/MapComponent"),
+  { ssr: false }
+);
 
 import { useEffect, useState } from "react";
 import API from "../../utils/api";
 import Chart from "../../components/Chart";
 import getLocationName from "../../utils/getLocationName";
-
 
 type Issue = {
   _id: string;
@@ -31,8 +36,6 @@ export default function Dashboard() {
     const fetchIssues = async () => {
       try {
         const res = await API.get("/issues");
-      
-        console.log("🔥 API DATA:", res.data);
 
         const sorted = res.data.sort(
           (a: any, b: any) =>
@@ -140,9 +143,6 @@ export default function Dashboard() {
         <h1 className="text-3xl font-bold text-white">
           Dashboard Overview
         </h1>
-        <p className="text-white/60 text-sm mt-1">
-          Monitor civic issues and risk insights in real time
-        </p>
       </div>
 
       <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 space-y-8 shadow-2xl">
@@ -158,8 +158,7 @@ export default function Dashboard() {
 
         {/* ALERT */}
         {topAreas.length > 0 && (
-          <div className="bg-red-500/10 border border-red-500/20 
-                          text-red-300 px-4 py-2 rounded-xl text-sm">
+          <div className="bg-red-500/10 border border-red-500/20 text-red-300 px-4 py-2 rounded-xl text-sm">
             ⚠ High risk concentration detected in {topAreas[0].area}
           </div>
         )}
@@ -172,30 +171,6 @@ export default function Dashboard() {
           <Chart issues={issues} />
         </div>
 
-        {/* EXTRA */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <StatCard title="Pending" value={pending} />
-          <StatCard title="Invalid" value={invalid} />
-          <StatCard title="Resolved" value={resolved} />
-        </div>
-
-        {/* TOP AREAS */}
-        <div className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
-          <h2 className="text-white font-semibold mb-4">
-            🔥 Top Areas
-          </h2>
-
-          {topAreas.map((area: any, i: number) => (
-            <div
-              key={i}
-              className="flex justify-between py-3 border-b border-white/10"
-            >
-              <span className="text-white/80">{area.area}</span>
-              <span className="text-white font-bold">{area.count}</span>
-            </div>
-          ))}
-        </div>
-
         {/* TABLE */}
         <div className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
           <h2 className="text-white font-semibold mb-4">
@@ -205,16 +180,18 @@ export default function Dashboard() {
           {issues.slice(0, 5).map((issue) => (
             <div
               key={issue._id}
-              onClick={() => setSelectedIssue(issue)}
-              className="flex items-center justify-between 
-                         py-4 border-b border-white/10 
-                         hover:bg-white/10 rounded-lg px-3 
-                         transition cursor-pointer
-                         hover:scale-[1.01]"
+              onClick={() => {
+                localStorage.setItem("selectedIssue", JSON.stringify(issue));
+                window.location.href="/driver";
+              }}
+              className="flex items-center justify-between py-4 border-b border-white/10 hover:bg-white/10 rounded-lg px-3 transition cursor-pointer hover:scale-[1.01]"
             >
               <div className="flex items-center gap-3">
                 <img
-                  src={issue.imageUrl || "/placeholder.png"}
+                  src={issue.imageUrl}
+                  onError={(e) => {
+                    e.currentTarget.src = "/placeholder.png";
+                  }}
                   className="w-12 h-12 rounded-lg object-cover"
                 />
 
@@ -229,7 +206,6 @@ export default function Dashboard() {
               </div>
 
               <div className="flex items-center gap-6 min-w-[140px] justify-end">
-
                 <div className="text-white font-semibold text-sm w-12 text-center">
                   {issue.votes}
                 </div>
@@ -245,13 +221,19 @@ export default function Dashboard() {
                 }`}>
                   {issue.status || "pending"}
                 </span>
-
               </div>
             </div>
           ))}
         </div>
 
-        
+        {/* 🔥 SELECTED ISSUE INFO (NEW FEATURE) */}
+        {selectedIssue && (
+          <div className="bg-indigo-500/10 border border-indigo-400/20 p-4 rounded-xl text-white">
+            📍 Selected: {selectedIssue.issueType}  
+            <br />
+            Lat: {selectedIssue.latitude}, Lng: {selectedIssue.longitude}
+          </div>
+        )}
 
       </div>
     </div>
@@ -261,11 +243,8 @@ export default function Dashboard() {
 // CARD
 function StatCard({ title, value }: any) {
   return (
-    <div className="bg-white/10 backdrop-blur-xl border border-white/10 
-                    p-5 rounded-2xl shadow hover:scale-105 transition">
-
+    <div className="bg-white/10 backdrop-blur-xl border border-white/10 p-5 rounded-2xl shadow hover:scale-105 transition">
       <p className="text-white/60 text-sm">{title}</p>
-
       <h2 className="text-3xl font-bold mt-2 text-white text-center">
         {value}
       </h2>

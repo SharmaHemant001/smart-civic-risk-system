@@ -23,14 +23,14 @@ type Issue = {
 type Props = {
   issues: Issue[];
   route: any;
-    routeIssues?: Issue[];
-    setRouteIssues?: any;
-    selectedIssue?: any;
-    mode?: string;
+  routeIssues?: Issue[];
+  setRouteIssues?: any;
+  selectedIssue?: any;
+  mode?: string;
 };
 
 /* =========================
-   📍 GEO DISTANCE FIX
+   📍 GEO DISTANCE
 ========================= */
 function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
   const R = 6371;
@@ -38,11 +38,10 @@ function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
   const dLon = ((lon2 - lon1) * Math.PI) / 180;
 
   const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.sin(dLat / 2) ** 2 +
     Math.cos((lat1 * Math.PI) / 180) *
       Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
+      Math.sin(dLon / 2) ** 2;
 
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
@@ -65,7 +64,48 @@ function FocusMap({ issue }: any) {
 }
 
 /* =========================
-   🚗 ROUTING ENGINE
+   🎯 ISSUE MARKER (FIXED POPUP)
+========================= */
+function IssueMarker({
+  issue,
+  isSelected,
+  isOnRoute,
+  selectedIcon,
+  routeIcon,
+  defaultIcon,
+}: any) {
+  const markerRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (isSelected && markerRef.current) {
+      markerRef.current.openPopup(); // ✅ correct way
+    }
+  }, [isSelected]);
+
+  const lat = +issue.latitude;
+  const lon = +issue.longitude;
+
+  if (!lat || !lon || isNaN(lat) || isNaN(lon)) return null;
+
+  return (
+    <Marker
+      ref={markerRef}
+      position={[lat, lon]}
+      icon={
+        isSelected
+          ? selectedIcon
+          : isOnRoute
+          ? routeIcon
+          : defaultIcon
+      }
+    >
+      <MarkerPopup issue={issue} />
+    </Marker>
+  );
+}
+
+/* =========================
+   🚗 ROUTING
 ========================= */
 function Routing({ route, issues, setRouteIssues }: any) {
   const map = useMap();
@@ -83,7 +123,6 @@ function Routing({ route, issues, setRouteIssues }: any) {
 
       const mapAny = map as any;
 
-      // 🔥 SAFE CLEANUP
       if (mapAny._routingControl) {
         try {
           map.removeControl(mapAny._routingControl);
@@ -117,7 +156,7 @@ function Routing({ route, issues, setRouteIssues }: any) {
               point.lng
             );
 
-            if (dist < 0.2) {
+            if (dist < 1.5) {
               nearbyIssues.push(issue);
             }
           });
@@ -142,7 +181,7 @@ function Routing({ route, issues, setRouteIssues }: any) {
               start.lat,
               start.lng
             );
-            return dist < 0.2;
+            return dist < 1.5;
           });
 
           let risk = "low";
@@ -229,14 +268,15 @@ export default function MapComponent({
   selectedIssue,
   mode = "dashboard",
 }: Props) {
+
+  const defaultIcon = useRef(new L.Icon.Default()).current;
+
   const routeIcon = useRef(
     new L.DivIcon({
       html: `<div style="width:16px;height:16px;background:#ef4444;border-radius:50%;border:3px solid white;"></div>`,
     })
   ).current;
 
-const defaultIcon = useRef(new L.Icon.Default()).current;
-  
   const selectedIcon = useRef(
     new L.DivIcon({
       html: `<div style="width:18px;height:18px;background:#22c55e;border-radius:50%;border:3px solid white;"></div>`,
@@ -246,15 +286,14 @@ const defaultIcon = useRef(new L.Icon.Default()).current;
   return (
     <div className="w-full h-full overflow-hidden rounded-2xl">
       <MapContainer
+        key={selectedIssue?._id || "map"}
         center={[28.6139, 77.209]}
         zoom={12}
         zoomControl={false}
         className="w-full h-full"
         preferCanvas={true}
       >
-        <TileLayer
-          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-        />
+        <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" />
 
         <ZoomControl position="bottomright" />
 
@@ -268,24 +307,22 @@ const defaultIcon = useRef(new L.Icon.Default()).current;
           />
         )}
 
-        
+        {(mode === "driver" ? routeIssues : issues).map((issue) => {
+          const isSelected = selectedIssue?._id === issue._id;
+          const isOnRoute = routeIssues?.some((i) => i._id === issue._id);
 
-// ✅ FIX MARKER LOGIC
-{(mode === "driver" ? routeIssues : issues).map((issue) => {
-  const lat = +issue.latitude;
-  const lon = +issue.longitude;
-  if (isNaN(lat) || isNaN(lon)) return null;
-
-  return (
-    <Marker
-      key={issue._id}
-      position={[lat, lon]}
-      icon={routeIcon}   // 🔥 always route style
-    >
-      <MarkerPopup issue={issue} />
-    </Marker>
-  );
-})}
+          return (
+            <IssueMarker
+              key={issue._id}
+              issue={issue}
+              isSelected={isSelected}
+              isOnRoute={isOnRoute}
+              selectedIcon={selectedIcon}
+              routeIcon={routeIcon}
+              defaultIcon={defaultIcon}
+            />
+          );
+        })}
       </MapContainer>
     </div>
   );
