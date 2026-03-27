@@ -13,18 +13,6 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useEffect, useRef, useState } from "react";
 
-// ✅ FIX Leaflet icons
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl:
-    "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png",
-  iconUrl:
-    "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png",
-  shadowUrl:
-    "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
-});
-
 type Issue = {
   _id: string;
   latitude: number;
@@ -36,35 +24,9 @@ type Props = {
   issues: Issue[];
   route?: any;
   routeIssues?: any[];
-  setRouteIssues?: any; // ✅ NEW
+  setRouteIssues?: any;
   selectedIssue?: any;
 };
-
-// 🔴 ROUTE MARKER
-const routeIcon = new L.DivIcon({
-  className: "",
-  html: `<div style="
-      width:16px;
-      height:16px;
-      background:#ef4444;
-      border-radius:50%;
-      border:3px solid white;
-      box-shadow:0 0 12px #ef4444;
-    "></div>`,
-});
-
-// 🟢 SELECTED MARKER
-const selectedIcon = new L.DivIcon({
-  className: "",
-  html: `<div style="
-      width:18px;
-      height:18px;
-      background:#22c55e;
-      border-radius:50%;
-      border:3px solid white;
-      box-shadow:0 0 14px #22c55e;
-    "></div>`,
-});
 
 // 🔥 FOCUS MAP
 function FocusMap({ issue }: any) {
@@ -83,7 +45,7 @@ function FocusMap({ issue }: any) {
   return null;
 }
 
-// 🔥 ROUTING (UPDATED)
+// 🔥 ROUTING (UNCHANGED LOGIC)
 function Routing({ route, issues, setRouteIssues }: any) {
   const map = useMap();
   const hasZoomed = useRef(false);
@@ -120,7 +82,6 @@ function Routing({ route, issues, setRouteIssues }: any) {
       routingControl.on("routesfound", (e: any) => {
         const coords = e.routes[0].coordinates;
 
-        // 🔥 NEW: DETECT ISSUES ON ROUTE
         const nearbyIssues: any[] = [];
 
         coords.forEach((point: any) => {
@@ -135,17 +96,14 @@ function Routing({ route, issues, setRouteIssues }: any) {
           });
         });
 
-        // REMOVE DUPLICATES
         const uniqueIssues = Array.from(
           new Map(nearbyIssues.map((i) => [i._id, i])).values()
         );
 
-        // 🔥 UPDATE DRIVER PAGE STATE
         if (setRouteIssues) {
           setRouteIssues(uniqueIssues);
         }
 
-        // 🔥 SEGMENT COLORING
         const segs = [];
 
         for (let i = 0; i < coords.length - 1; i++) {
@@ -238,17 +196,43 @@ export default function MapComponent({
   setRouteIssues,
   selectedIssue,
 }: Props) {
+  // ✅ FIX ICONS INSIDE COMPONENT
+  const routeIcon = useRef(
+    new L.DivIcon({
+      className: "",
+      html: `<div style="width:16px;height:16px;background:#ef4444;border-radius:50%;border:3px solid white;"></div>`,
+    })
+  ).current;
+
+  const selectedIcon = useRef(
+    new L.DivIcon({
+      className: "",
+      html: `<div style="width:18px;height:18px;background:#22c55e;border-radius:50%;border:3px solid white;"></div>`,
+    })
+  ).current;
+
+  useEffect(() => {
+    delete (L.Icon.Default.prototype as any)._getIconUrl;
+
+    L.Icon.Default.mergeOptions({
+      iconRetinaUrl:
+        "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png",
+      iconUrl:
+        "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png",
+      shadowUrl:
+        "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
+    });
+  }, []);
+
   return (
-    <div className="absolute inset-0 overflow-hidden h-full w-full">
+    <div className="w-full h-full">
       <MapContainer
         center={[28.6139, 77.209]}
         zoom={12}
         zoomControl={false}
         className="w-full h-full"
       >
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
+        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
         <ZoomControl position="bottomright" />
 
@@ -265,7 +249,6 @@ export default function MapComponent({
         {issues.map((issue) => {
           const lat = Number(issue.latitude);
           const lon = Number(issue.longitude);
-
           if (isNaN(lat) || isNaN(lon)) return null;
 
           const isOnRoute = routeIssues.some(
