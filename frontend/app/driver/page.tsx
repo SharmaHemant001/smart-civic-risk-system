@@ -78,6 +78,7 @@ export default function DriverPage() {
     return filter
       ? routeIssues.filter((i) => i.issueType === filter)
       : routeIssues;
+      
   }
 
   // 🔥 if coming from dashboard → show selected issue
@@ -133,24 +134,7 @@ export default function DriverPage() {
         />
       </div>
 
-      <button
-  onClick={async () => {
-    try {
-      await fetch(
-        "https://smart-civic-risk-system.onrender.com/api/dev/generate-demo",
-        { method: "POST" }
-      );
-      alert("Demo data generated 🚀");
-      window.location.reload();
-    } catch (err) {
-      alert("Failed to generate demo data");
-    }
-  }}
-  className="absolute bottom-6 right-6 z-[1000]
-             bg-purple-600 text-white px-4 py-2 rounded-lg"
->
-  Generate Demo Data
-</button>
+    
 
       {/* 📊 LEGEND */}
       <div className="absolute bottom-6 left-6 z-[1000]">

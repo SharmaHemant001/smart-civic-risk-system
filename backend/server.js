@@ -4,9 +4,6 @@ import mongoose from "mongoose";
 import cron from "node-cron";
 import cors from "cors";
 
-import devRoutes from "./routes/devRoutes.js";
-
-app.use("/api/dev", devRoutes);
 
 import issueRoutes from "./routes/issueRoutes.js";
 import locationRoutes from "./routes/locationRoutes.js";
