@@ -60,7 +60,7 @@ export default function DriverPage() {
 
   // ✅ MEMOIZED MAP (KEY FIX)
  
- const baseIssues = route ? routeIssues : issues;
+ const baseIssues = route ? routeIssues : [];
 
 const displayIssues = filter
   ? baseIssues.filter((i) => i.issueType === filter)
@@ -99,6 +99,15 @@ const memoMap = useMemo(() => {
           ⚠ {routeIssues.length} issue(s) on your route
         </div>
       )}
+         
+
+       { !route && (
+        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-[1000]
+                        bg-indigo-500 text-white px-5 py-2 rounded-xl shadow-lg">
+                  🚗 Enter route
+        </div>
+      )}
+
 
       {/* 🗺️ MAP */}
       <div className="h-full w-full">
