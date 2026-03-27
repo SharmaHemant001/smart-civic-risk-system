@@ -29,24 +29,44 @@ type Props = {
   mode?: "driver" | "dashboard";
 };
 
-// 🔥 FOCUS MAP
+/* =========================
+   📍 GEO DISTANCE FIX
+========================= */
+function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+/* =========================
+   🎯 FOCUS MAP
+========================= */
 function FocusMap({ issue }: any) {
   const map = useMap();
 
   useEffect(() => {
     if (!issue) return;
 
-    map.flyTo(
-      [Number(issue.latitude), Number(issue.longitude)],
-      16,
-      { duration: 1.5 }
-    );
+    map.flyTo([+issue.latitude, +issue.longitude], 16, {
+      duration: 1.5,
+    });
   }, [issue, map]);
 
   return null;
 }
 
-// 🔥 ROUTING (UNCHANGED LOGIC)
+/* =========================
+   🚗 ROUTING ENGINE
+========================= */
 function Routing({ route, issues, setRouteIssues }: any) {
   const map = useMap();
   const hasZoomed = useRef(false);
@@ -63,14 +83,14 @@ function Routing({ route, issues, setRouteIssues }: any) {
 
       const mapAny = map as any;
 
+      // 🔥 SAFE CLEANUP
       if (mapAny._routingControl) {
-  try {
-    map.removeControl(mapAny._routingControl);
-  } catch (e) {
-    console.warn("Routing cleanup skipped");
-  }
-  mapAny._routingControl = null;
-}
+        try {
+          map.removeControl(mapAny._routingControl);
+        } catch {}
+        mapAny._routingControl = null;
+      }
+
       const routingControl = (L as any).Routing.control({
         waypoints: [
           L.latLng(route.start.lat, route.start.lon),
@@ -90,9 +110,12 @@ function Routing({ route, issues, setRouteIssues }: any) {
 
         coords.forEach((point: any) => {
           issues.forEach((issue: any) => {
-            const dx = issue.latitude - point.lat;
-            const dy = issue.longitude - point.lng;
-            const dist = Math.sqrt(dx * dx + dy * dy);
+            const dist = getDistance(
+              issue.latitude,
+              issue.longitude,
+              point.lat,
+              point.lng
+            );
 
             if (dist < 0.2) {
               nearbyIssues.push(issue);
@@ -104,9 +127,7 @@ function Routing({ route, issues, setRouteIssues }: any) {
           new Map(nearbyIssues.map((i) => [i._id, i])).values()
         );
 
-        if (setRouteIssues) {
-          setRouteIssues(uniqueIssues);
-        }
+        setRouteIssues?.(uniqueIssues);
 
         const segs = [];
 
@@ -115,9 +136,12 @@ function Routing({ route, issues, setRouteIssues }: any) {
           const end = coords[i + 1];
 
           const nearby = uniqueIssues.filter((issue: any) => {
-            const dx = issue.latitude - start.lat;
-            const dy = issue.longitude - start.lng;
-            const dist = Math.sqrt(dx * dx + dy * dy);
+            const dist = getDistance(
+              issue.latitude,
+              issue.longitude,
+              start.lat,
+              start.lng
+            );
             return dist < 0.2;
           });
 
@@ -157,11 +181,13 @@ function Routing({ route, issues, setRouteIssues }: any) {
       isMounted = false;
       const mapAny = map as any;
       if (mapAny._routingControl) {
-        map.removeControl(mapAny._routingControl);
+        try {
+          map.removeControl(mapAny._routingControl);
+        } catch {}
         mapAny._routingControl = null;
       }
     };
-  }, [route, map, issues, setRouteIssues]);
+  }, [route, issues]);
 
   return (
     <>
@@ -192,7 +218,9 @@ function Routing({ route, issues, setRouteIssues }: any) {
   );
 }
 
-// ✅ MAIN MAP
+/* =========================
+   🗺️ MAIN MAP
+========================= */
 export default function MapComponent({
   issues,
   route,
@@ -201,33 +229,17 @@ export default function MapComponent({
   selectedIssue,
   mode = "dashboard",
 }: Props) {
-  // ✅ FIX ICONS INSIDE COMPONENT
   const routeIcon = useRef(
     new L.DivIcon({
-      className: "",
       html: `<div style="width:16px;height:16px;background:#ef4444;border-radius:50%;border:3px solid white;"></div>`,
     })
   ).current;
 
   const selectedIcon = useRef(
     new L.DivIcon({
-      className: "",
       html: `<div style="width:18px;height:18px;background:#22c55e;border-radius:50%;border:3px solid white;"></div>`,
     })
   ).current;
-
-  useEffect(() => {
-    delete (L.Icon.Default.prototype as any)._getIconUrl;
-
-    L.Icon.Default.mergeOptions({
-      iconRetinaUrl:
-        "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png",
-      iconUrl:
-        "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png",
-      shadowUrl:
-        "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
-    });
-  }, []);
 
   return (
     <div className="w-full h-full overflow-hidden rounded-2xl">
@@ -238,10 +250,9 @@ export default function MapComponent({
         className="w-full h-full"
         preferCanvas={true}
       >
-       <TileLayer
-  url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-  attribution="© OpenStreetMap & CARTO"
-/>
+        <TileLayer
+          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+        />
 
         <ZoomControl position="bottomright" />
 
@@ -256,33 +267,24 @@ export default function MapComponent({
         )}
 
         {(mode === "driver" ? routeIssues : issues).map((issue) => {
-          const lat = Number(issue.latitude);
-          const lon = Number(issue.longitude);
+          const lat = +issue.latitude;
+          const lon = +issue.longitude;
           if (isNaN(lat) || isNaN(lon)) return null;
 
           const isOnRoute = routeIssues.some(
             (ri) => ri._id === issue._id
           );
 
-          const isSelected = selectedIssue?._id === issue._id;
-
           return (
             <Marker
               key={issue._id}
               position={[lat, lon]}
-              icon={
-                isSelected
-                  ? selectedIcon
-                  : isOnRoute
-                  ? routeIcon
-                 : new L.Icon.Default()
-              }
+              icon={isOnRoute ? routeIcon : new L.Icon.Default()}
             >
               <MarkerPopup issue={issue} />
             </Marker>
           );
         })}
-        
       </MapContainer>
     </div>
   );
