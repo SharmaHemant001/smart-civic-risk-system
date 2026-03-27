@@ -266,7 +266,7 @@ export default function MapComponent({
                   ? selectedIcon
                   : isOnRoute
                   ? routeIcon
-                  : undefined
+                 : new L.Icon.Default()
               }
             >
               <MarkerPopup issue={issue} />
