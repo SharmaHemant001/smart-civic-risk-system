@@ -13,7 +13,7 @@ export const uploadIssue = async (req, res) => {
 
     const imageUrl = req.body.imageUrl || null;
     const imagePath = req.file
-      ? `http://localhost:5000/${req.file.path}`
+      ? `${BASE_URL}/${req.file.path}`
       : null;
 
     if ((!imageUrl && !imagePath) || !latitude || !longitude || !issueType) {

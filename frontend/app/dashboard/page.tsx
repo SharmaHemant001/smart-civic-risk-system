@@ -263,6 +263,7 @@ export default function Dashboard() {
             <MapComponent
               issues={issues}
               selectedIssue={selectedIssue}
+              route={null}
             />
           </div>
         )}

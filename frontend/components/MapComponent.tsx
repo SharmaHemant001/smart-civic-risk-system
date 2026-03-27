@@ -22,11 +22,11 @@ type Issue = {
 
 type Props = {
   issues: Issue[];
-  route?: any;
-  routeIssues?: any[];
-  setRouteIssues?: any;
-  selectedIssue?: any;
-  mode?: "driver" | "dashboard";
+  route: any;
+    routeIssues?: Issue[];
+    setRouteIssues?: any;
+    selectedIssue?: any;
+    mode?: string;
 };
 
 /* =========================
@@ -235,6 +235,8 @@ export default function MapComponent({
     })
   ).current;
 
+const defaultIcon = useRef(new L.Icon.Default()).current;
+  
   const selectedIcon = useRef(
     new L.DivIcon({
       html: `<div style="width:18px;height:18px;background:#22c55e;border-radius:50%;border:3px solid white;"></div>`,
@@ -279,7 +281,7 @@ export default function MapComponent({
             <Marker
               key={issue._id}
               position={[lat, lon]}
-              icon={isOnRoute ? routeIcon : new L.Icon.Default()}
+              icon={isOnRoute ? routeIcon : defaultIcon}
             >
               <MarkerPopup issue={issue} />
             </Marker>

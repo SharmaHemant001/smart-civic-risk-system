@@ -22,13 +22,10 @@ type Issue = {
 
 // ✅ Dynamic Map import
 const MapComponent = dynamic(
-  () => import("@/components/MapComponent").then((mod) => mod.default),
+  () => import("@/components/MapComponent"),
   { ssr: false }
-) as React.ComponentType<{
-  issues: Issue[];
-  route: any;
-  routeIssues?: Issue[];
-}>;
+);
+
 
 export default function DriverPage() {
   const [issues, setIssues] = useState<Issue[]>([]);
@@ -75,6 +72,7 @@ const memoMap = useMemo(() => {
       issues={displayIssues}
       route={route}
       routeIssues={routeIssues}
+      mode="driver"
     />
   );
 }, [displayIssues, route, routeIssues]);
