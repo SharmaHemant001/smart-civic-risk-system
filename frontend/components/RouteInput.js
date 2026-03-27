@@ -7,17 +7,21 @@ export default function RouteInput({ setRoute, setRouteIssues }) {
   const [end, setEnd] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // ✅ FIXED (JS + reliable API)
   const getCoordinates = async (place) => {
-    const res = await fetch(
-      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(place)}`,
-      {
-        headers: {
-          "User-Agent": "Civic-risk-system",
-        },
-      }
-    );
+    const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(
+      place + ", India"
+    )}`;
+
+    const res = await fetch(url);
+
+    if (!res.ok) {
+      throw new Error("API blocked");
+    }
 
     const data = await res.json();
+
+    console.log("📍 Nominatim:", data);
 
     if (!data || data.length === 0) {
       throw new Error("Location not found");
@@ -49,8 +53,11 @@ export default function RouteInput({ setRoute, setRouteIssues }) {
       setRouteIssues([]); // reset
 
     } catch (err) {
-      console.error(err);
-      alert("Route failed. Try valid location names.");
+      console.error("❌ Route Error:", err);
+
+      alert(
+        "Location not found. Try:\n• Noida Sector 62\n• India Gate Delhi"
+      );
     } finally {
       setLoading(false);
     }
