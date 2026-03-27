@@ -268,25 +268,24 @@ const defaultIcon = useRef(new L.Icon.Default()).current;
           />
         )}
 
-        {(mode === "driver" ? routeIssues : issues).map((issue) => {
-          const lat = +issue.latitude;
-          const lon = +issue.longitude;
-          if (isNaN(lat) || isNaN(lon)) return null;
+        
 
-          const isOnRoute = routeIssues.some(
-            (ri) => ri._id === issue._id
-          );
+// ✅ FIX MARKER LOGIC
+{(mode === "driver" ? routeIssues : issues).map((issue) => {
+  const lat = +issue.latitude;
+  const lon = +issue.longitude;
+  if (isNaN(lat) || isNaN(lon)) return null;
 
-          return (
-            <Marker
-              key={issue._id}
-              position={[lat, lon]}
-              icon={isOnRoute ? routeIcon : defaultIcon}
-            >
-              <MarkerPopup issue={issue} />
-            </Marker>
-          );
-        })}
+  return (
+    <Marker
+      key={issue._id}
+      position={[lat, lon]}
+      icon={routeIcon}   // 🔥 always route style
+    >
+      <MarkerPopup issue={issue} />
+    </Marker>
+  );
+})}
       </MapContainer>
     </div>
   );

@@ -4,13 +4,7 @@ import { useEffect, useState } from "react";
 import API from "../../utils/api";
 import Chart from "../../components/Chart";
 import getLocationName from "../../utils/getLocationName";
-import dynamic from "next/dynamic";
 
-// 🔥 DYNAMIC MAP IMPORT
-const MapComponent = dynamic(
-  () => import("@/components/MapComponent"),
-  { ssr: false }
-);
 
 type Issue = {
   _id: string;
@@ -257,16 +251,7 @@ export default function Dashboard() {
           ))}
         </div>
 
-        {/* 🗺️ MAP */}
-        {selectedIssue && (
-          <div className="mt-6 h-[400px] rounded-2xl overflow-hidden border border-white/10">
-            <MapComponent
-              issues={issues}
-              selectedIssue={selectedIssue}
-              route={null}
-            />
-          </div>
-        )}
+        
 
       </div>
     </div>
