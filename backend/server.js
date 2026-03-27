@@ -8,7 +8,9 @@ import issueRoutes from "./routes/issueRoutes.js";
 import locationRoutes from "./routes/locationRoutes.js";
 import Issue from "./models/Issue.js";
 
-dotenv.config();
+dotenv.config({ path  : "./.env" });
+
+console.log("MONGO_URI:", process.env.MONGO_URI);
 
 const app = express();
 
