@@ -117,7 +117,7 @@ function Routing({ route, issues, setRouteIssues }: any) {
             const dx = issue.latitude - start.lat;
             const dy = issue.longitude - start.lng;
             const dist = Math.sqrt(dx * dx + dy * dy);
-            return dist < 0.01;
+            return dist < 0.2;
           });
 
           let risk = "low";
