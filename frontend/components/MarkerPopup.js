@@ -124,11 +124,6 @@ export default function MarkerPopup({ issue }) {
             Is this issue resolved?
           </p>
 
-          <div className="flex justify-center gap-4 text-xs text-gray-300">
-            <span>Yes: {validationVotes.yes || 0}</span>
-            <span>No: {validationVotes.no || 0}</span>
-          </div>
-
           {!validated && status !== "invalid" && (
             <div className="flex gap-2">
               <button
