@@ -26,6 +26,7 @@ type Issue = {
 export default function Dashboard() {
   const [issues, setIssues] = useState<Issue[]>([]);
   const [topAreas, setTopAreas] = useState<any[]>([]);
+  const [loadingAreas, setLoadingAreas] = useState(true);
 
   // =========================
   // FETCH ISSUES
@@ -57,9 +58,17 @@ export default function Dashboard() {
     const fetchTopAreas = async () => {
       try {
         const res = await API.get("/issues/top-areas");
-        setTopAreas(res.data);
+
+        // ✅ remove null / empty areas
+        const cleaned = res.data.filter(
+          (a: any) => a._id && a._id !== "Unknown"
+        );
+
+        setTopAreas(cleaned);
       } catch (err) {
         console.error(err);
+      } finally {
+        setLoadingAreas(false);
       }
     };
 
@@ -119,10 +128,15 @@ export default function Dashboard() {
             🔥 Top Areas
           </h2>
 
-          <div className="flex gap-3 overflow-x-auto scrollbar-hide">
-            {topAreas
-              .filter((area: any) => area._id !== "Unknown")
-              .map((area: any, index: number) => (
+          {loadingAreas ? (
+            <div className="text-white/60 text-sm">Loading...</div>
+          ) : topAreas.length === 0 ? (
+            <div className="text-white/50 text-sm">
+              No valid location data yet
+            </div>
+          ) : (
+            <div className="flex gap-3 overflow-x-auto">
+              {topAreas.map((area: any, index: number) => (
                 <div
                   key={index}
                   className="min-w-[140px] px-4 py-3 rounded-xl bg-white/10 text-white text-center hover:bg-white/20 transition"
@@ -130,7 +144,8 @@ export default function Dashboard() {
                   {area._id}
                 </div>
               ))}
-          </div>
+            </div>
+          )}
         </div>
 
         {/* LATEST REPORTS */}
@@ -156,11 +171,11 @@ export default function Dashboard() {
                     {issue.issueType}
                   </p>
 
-                  <p className="text-xs text-white/70 flex items-center gap-1">
-  📍 {issue.locationName && issue.locationName !== "Unknown"
-    ? issue.locationName
-    : "Location unavailable"}
-</p>
+                  <p className="text-xs text-white/70">
+                    📍 {issue.locationName && issue.locationName !== "Unknown"
+                      ? issue.locationName
+                      : "Location unavailable"}
+                  </p>
                 </div>
               </div>
 
