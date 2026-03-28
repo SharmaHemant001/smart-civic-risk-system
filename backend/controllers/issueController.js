@@ -2,7 +2,7 @@ import Issue from "../models/Issue.js";
 import { checkDuplicate } from "../services/duplicateService.js";
 import { calculateRisk } from "../services/riskService.js";
 import User from "../models/User.js";
-import { getLocationName } from "../services/locationService.js"; 
+import getLocationName from "../services/getLocationName.js"; // ✅ FIXED (default import)
 
 /* =========================
    🚀 UPLOAD ISSUE
@@ -16,7 +16,7 @@ export const uploadIssue = async (req, res) => {
 
     const imageUrl = req.body.imageUrl || null;
 
-    // ✅ FIXED BASE URL
+    // ✅ BASE URL
     const baseUrl = `${req.protocol}://${req.get("host")}`;
 
     const imagePath = req.file
@@ -27,11 +27,11 @@ export const uploadIssue = async (req, res) => {
       return res.status(400).json({ message: "Missing fields" });
     }
 
-    // ✅ FIX: calculate location inside function
+    // ✅ FETCH LOCATION NAME (SAFE)
     let locationName = "Unknown";
     try {
       locationName = await getLocationName(latitude, longitude);
-    } catch {
+    } catch (err) {
       console.log("Location fetch failed");
     }
 
@@ -183,7 +183,7 @@ export const getTopAreas = async (req, res) => {
         $sort: { count: -1 }
       },
       {
-        $limit: 3 // ✅ show only top 3
+        $limit: 3
       }
     ]);
 

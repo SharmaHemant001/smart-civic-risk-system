@@ -154,30 +154,39 @@ export default function Dashboard() {
         </div>
 
         {/* 🔥 TOP AREAS */}
-        {topAreas.length > 0 && (
-          <div className="bg-white/10 rounded-2xl p-4 md:p-6">
-            <h2 className="text-white font-semibold mb-4 text-sm md:text-lg">
-              🔥 Top Areas
-            </h2>
+        
+{/* 🔥 Top Areas */}
+<div className="mt-6 bg-white/5 backdrop-blur-xl rounded-2xl p-5 border border-white/10">
 
-            <div className="flex flex-col gap-2 md:grid md:grid-cols-2">
-              {topAreas.map((area, index) => (
-                <div
-                  key={index}
-                  className="flex justify-between py-2 md:py-3 border-b border-white/10"
-                >
-                  <span className="text-white text-sm md:text-base truncate">
-                    {area.area}
-                  </span>
+  <h2 className="text-white text-lg font-semibold mb-4 flex items-center gap-2">
+    🔥 Top Areas
+  </h2>
 
-                  <span className="bg-white/20 px-3 py-1 rounded-full text-xs md:text-sm">
-                    {area.count}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+  <div className="flex gap-3 overflow-x-auto scrollbar-hide">
+
+    {topAreas.map((area: any, index: number) => (
+      <div
+        key={index}
+        className="
+          min-w-[140px]
+          bg-white/10 backdrop-blur-md
+          border border-white/10
+          px-4 py-3
+          rounded-xl
+          text-white text-sm font-medium
+          hover:scale-105 hover:bg-white/20
+          transition duration-300
+          shadow-md
+          text-center
+        "
+      >
+        {area._id || "Unknown"}
+      </div>
+    ))}
+
+  </div>
+</div>
+
 
         {/* TABLE */}
         <div className="bg-white/10 rounded-2xl p-4 md:p-6">
