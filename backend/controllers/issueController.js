@@ -11,7 +11,7 @@ const COMMUNITY_RESOLUTION_THRESHOLD = 3;
 ========================= */
 export const uploadIssue = async (req, res) => {
   const expiresAt = new Date();
-  expiresAt.setHours(expiresAt.getHours() + 48);
+  expiresAt.setDate(expiresAt.getDate() + 7);
 
   try {
     const { latitude, longitude, issueType } = req.body;
