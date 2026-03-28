@@ -9,7 +9,7 @@ const MapComponent = dynamic(
 import { useEffect, useState } from "react";
 import API from "../../utils/api";
 import Chart from "../../components/Chart";
-import getLocationName from "../../utils/getLocationName";
+import getLocationName from "../../../backend/services/getLocationName";
 
 type Issue = {
   _id: string;

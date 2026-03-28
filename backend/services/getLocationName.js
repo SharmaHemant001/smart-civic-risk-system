@@ -11,17 +11,10 @@ export default async function getLocationName(lat, lon) {
     if (locationCache[key]) {
       return locationCache[key];
     }
-    
-    // 🔥 STRICT ENV (NO LOCALHOST IN PROD)
-    const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
-    if (!BASE_URL) {
-      console.error("❌ NEXT_PUBLIC_API_URL not defined");
-      return "Unknown";
-    }
-
+    // ✅ DIRECT OPENSTREETMAP API (NO ENV NEEDED)
     const res = await fetch(
-      `${BASE_URL}/location/reverse?lat=${lat}&lon=${lon}`
+      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`
     );
 
     if (!res.ok) {
@@ -32,11 +25,13 @@ export default async function getLocationName(lat, lon) {
     const data = await res.json();
 
     const name =
-      data?.name ||
+      data?.address?.city ||
+      data?.address?.town ||
+      data?.address?.village ||
       data?.display_name?.split(",")[0] ||
       "Unknown";
 
-    // ✅ SAVE CACHE
+    // ✅ CACHE SAVE
     locationCache[key] = name;
 
     return name;
