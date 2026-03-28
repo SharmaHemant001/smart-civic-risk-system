@@ -27,7 +27,7 @@ export default function Sidebar() {
     >
       {/* 🔥 LOGO */}
       <Link
-        href="/dashboard"
+        href="/"
         className="text-2xl bg-white/20 p-2 rounded-xl 
                    backdrop-blur-md shadow-lg 
                    hover:scale-110 hover:bg-white/30 

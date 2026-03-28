@@ -31,7 +31,9 @@ export const uploadIssue = async (req, res) => {
     let locationName = "Unknown";
     try {
       locationName = await getLocationName(latitude, longitude);
-    } catch {}
+    } catch(err) {
+      console.log("location fetch failed");
+    }
 
     const user = await User.findOne();
 

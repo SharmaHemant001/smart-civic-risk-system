@@ -1,6 +1,6 @@
 import express from "express";
 import multer from "multer";
-import path from "path"; // ✅ ADD THIS
+import path from "path";
 import Issue from "../models/Issue.js";
 import User from "../models/User.js";
 
@@ -15,7 +15,7 @@ import {
 const router = express.Router();
 
 /* =========================
-   ✅ FIXED MULTER SETUP
+   ✅ MULTER SETUP
 ========================= */
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -23,8 +23,8 @@ const storage = multer.diskStorage({
   },
 
   filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname); // ✅ get extension
-    cb(null, Date.now() + ext); // ✅ add extension
+    const ext = path.extname(file.originalname);
+    cb(null, Date.now() + ext);
   },
 });
 
@@ -40,17 +40,22 @@ router.post("/upload", upload.single("image"), uploadIssue);
 // 📥 Get All Issues
 router.get("/", getIssues);
 
-// 👍 Basic Vote
+// 👍 Vote
 router.post("/:id/vote", voteIssue);
 
 // 🚗 Update Status
 router.patch("/:id/status", updateStatus);
 
 /* =========================
-   🔥 ADVANCED FEATURES
+   🔥 FIX: TOP AREAS ROUTE
 ========================= */
 
-// 👍 UPVOTE
+// ✅ ADD THIS LINE (IMPORTANT)
+router.get("/top-areas", getTopAreas);
+
+/* =========================
+   👍 UPVOTE
+========================= */
 router.post("/:id/upvote", async (req, res) => {
   try {
     const { id } = req.params;

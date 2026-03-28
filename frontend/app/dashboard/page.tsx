@@ -156,9 +156,11 @@ export default function Dashboard() {
                     {issue.issueType}
                   </p>
 
-                  <p className="text-xs text-white/60">
-                    📍 {issue.locationName || "Unknown"}
-                  </p>
+                  <p className="text-xs text-white/70 flex items-center gap-1">
+  📍 {issue.locationName && issue.locationName !== "Unknown"
+    ? issue.locationName
+    : "Location unavailable"}
+</p>
                 </div>
               </div>
 
