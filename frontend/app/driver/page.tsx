@@ -93,7 +93,7 @@ export default function DriverPage() {
 
 
   return (
-    <div className="flex h-full min-h-0 flex-col md:relative md:block">
+    <div className="flex h-full min-h-0 flex-col bg-black md:relative md:block">
 
       {/* 🔥 TOP CONTROLS */}
       <div className="z-[1000] flex flex-col gap-3 p-3 md:absolute md:top-5 md:left-5 md:right-5 md:flex-row md:items-start md:justify-between md:pointer-events-none md:p-0">
