@@ -18,6 +18,7 @@ createAdt: { type: Date, default: Date.now },
 
   latitude: { type: Number, required: true },
   longitude: { type: Number, required: true },
+  locationName: { type: String, default: "Unknown" },
 
   votes: { type: Number, default: 0 },
 

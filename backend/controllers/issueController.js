@@ -53,6 +53,13 @@ export const uploadIssue = async (req, res) => {
 
     if (existingIssue) {
       existingIssue.votes += 1;
+      if (
+        locationName &&
+        locationName !== "Unknown" &&
+        (!existingIssue.locationName || existingIssue.locationName === "Unknown")
+      ) {
+        existingIssue.locationName = locationName;
+      }
       existingIssue.riskScore = calculateRisk(
         issueType,
         existingIssue.votes
@@ -96,6 +103,27 @@ export const uploadIssue = async (req, res) => {
 export const getIssues = async (req, res) => {
   try {
     const issues = await Issue.find().sort({ createdAt: -1 });
+
+    await Promise.all(
+      issues.map(async (issue) => {
+        if (
+          issue.latitude &&
+          issue.longitude &&
+          (!issue.locationName || issue.locationName === "Unknown")
+        ) {
+          const resolvedLocation = await getLocationName(
+            issue.latitude,
+            issue.longitude
+          );
+
+          if (resolvedLocation && resolvedLocation !== "Unknown") {
+            issue.locationName = resolvedLocation;
+            await issue.save();
+          }
+        }
+      })
+    );
+
     res.json(issues);
   } catch (error) {
     console.error("GET ISSUES ERROR:", error);

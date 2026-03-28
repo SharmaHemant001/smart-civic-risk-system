@@ -14,7 +14,13 @@ export default async function getLocationName(lat, lon) {
 
     // ✅ DIRECT OPENSTREETMAP API (NO ENV NEEDED)
     const res = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`
+      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`,
+      {
+        headers: {
+          "User-Agent": "ai-civic-risk-system/1.0",
+          Accept: "application/json",
+        },
+      }
     );
 
     if (!res.ok) {
