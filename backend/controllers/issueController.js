@@ -15,15 +15,11 @@ export const uploadIssue = async (req, res) => {
     const { latitude, longitude, issueType } = req.body;
 
     const imageUrl = req.body.imageUrl || null;
-
-    // ✅ BASE URL
-    const baseUrl = `${req.protocol}://${req.get("host")}`;
-
-    const imagePath = req.file
-      ? `${baseUrl}/${req.file.path.replace(/\\/g, "/")}`
+    const uploadedImageData = req.file
+      ? `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`
       : null;
 
-    if ((!imageUrl && !imagePath) || !latitude || !longitude || !issueType) {
+    if ((!imageUrl && !uploadedImageData) || !latitude || !longitude || !issueType) {
       return res.status(400).json({ message: "Missing fields" });
     }
 
@@ -53,6 +49,9 @@ export const uploadIssue = async (req, res) => {
 
     if (existingIssue) {
       existingIssue.votes += 1;
+      if (imageUrl || uploadedImageData) {
+        existingIssue.imageUrl = imageUrl || uploadedImageData;
+      }
       if (
         locationName &&
         locationName !== "Unknown" &&
@@ -77,7 +76,7 @@ export const uploadIssue = async (req, res) => {
     const riskScore = calculateRisk(issueType, 1);
 
     const newIssue = await Issue.create({
-      imageUrl: imageUrl || imagePath,
+      imageUrl: imageUrl || uploadedImageData,
       issueType,
       latitude,
       longitude,
