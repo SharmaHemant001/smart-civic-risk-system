@@ -64,7 +64,7 @@ function FocusMap({ issue }: any) {
 }
 
 /* =========================
-   🎯 ISSUE MARKER (FIXED POPUP)
+   🎯 ISSUE MARKER
 ========================= */
 function IssueMarker({
   issue,
@@ -78,7 +78,7 @@ function IssueMarker({
 
   useEffect(() => {
     if (isSelected && markerRef.current) {
-      markerRef.current.openPopup(); // ✅ correct way
+      markerRef.current.openPopup();
     }
   }, [isSelected]);
 
@@ -206,7 +206,7 @@ function Routing({ route, issues, setRouteIssues }: any) {
           const bounds = L.latLngBounds(
             coords.map((c: any) => [c.lat, c.lng])
           );
-          map.fitBounds(bounds, { padding: [80, 80] });
+          map.fitBounds(bounds, { padding: [60, 60] });
           hasZoomed.current = true;
         }
       });
@@ -268,7 +268,6 @@ export default function MapComponent({
   selectedIssue,
   mode = "dashboard",
 }: Props) {
-
   const defaultIcon = useRef(new L.Icon.Default()).current;
 
   const routeIcon = useRef(
@@ -284,13 +283,14 @@ export default function MapComponent({
   ).current;
 
   return (
-    <div className="w-full h-full overflow-hidden rounded-2xl">
+    <div className="w-full h-[300px] sm:h-[400px] md:h-full overflow-hidden rounded-2xl">
+
       <MapContainer
         key={selectedIssue?._id || "map"}
         center={[28.6139, 77.209]}
         zoom={12}
         zoomControl={false}
-        className="w-full h-full"
+        className="w-full h-full touch-none md:touch-auto"
         preferCanvas={true}
       >
         <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" />

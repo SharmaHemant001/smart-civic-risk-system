@@ -1,31 +1,13 @@
-
 "use client";
 
 import { useState } from "react";
 import API from "../utils/api";
 
-// 🔥 Issue options with images
 const issueOptions = [
-  {
-    key: "pothole",
-    label: "Pothole",
-    img: "https://cdn-icons-png.flaticon.com/512/684/684908.png",
-  },
-  {
-    key: "garbage",
-    label: "Garbage",
-    img: "https://cdn-icons-png.flaticon.com/512/1046/1046857.png",
-  },
-  {
-    key: "sewer",
-    label: "Sewer",
-    img: "https://cdn-icons-png.flaticon.com/512/3062/3062634.png",
-  },
-  {
-    key: "construction",
-    label: "Construction",
-    img: "https://cdn-icons-png.flaticon.com/512/1995/1995574.png",
-  },
+  { key: "pothole", label: "Pothole", img: "https://cdn-icons-png.flaticon.com/512/684/684908.png" },
+  { key: "garbage", label: "Garbage", img: "https://cdn-icons-png.flaticon.com/512/1046/1046857.png" },
+  { key: "sewer", label: "Sewer", img: "https://cdn-icons-png.flaticon.com/512/3062/3062634.png" },
+  { key: "construction", label: "Construction", img: "https://cdn-icons-png.flaticon.com/512/1995/1995574.png" },
 ];
 
 export default function UploadForm() {
@@ -79,15 +61,15 @@ export default function UploadForm() {
   };
 
   return (
-    <div className="space-y-4 text-white">
+    <div className="space-y-5 text-white">
 
-      {/* 🔥 ISSUE TYPE (IMAGE CARDS) */}
+      {/* 🔥 ISSUE TYPE */}
       <div>
         <p className="text-sm font-medium mb-2 text-white/80">
           Select Issue Type
         </p>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-2 gap-3">
           {issueOptions.map((item) => (
             <div
               key={item.key}
@@ -99,32 +81,30 @@ export default function UploadForm() {
                   : "bg-white/20 border-white/30 hover:bg-white/30"
               }`}
             >
-              <img
-                src={item.img}
-                className="w-8 h-8 mx-auto mb-2"
-              />
-              <p className="text-sm">{item.label}</p>
+              <img src={item.img} className="w-8 h-8 mx-auto mb-2" />
+              <p className="text-xs sm:text-sm">{item.label}</p>
             </div>
           ))}
         </div>
       </div>
-      <div className="absolute bottom-[-100px] left-[-100px] w-[300px] h-[300px]
-  bg-purple-400 opacity-30 blur-[120px] rounded-full" />
 
-      {/* 📸 IMAGE UPLOAD */}
+      {/* 📸 IMAGE */}
       <div>
         <p className="text-sm font-medium mb-2 text-white/80">
           Upload Image
         </p>
 
-        <div className="border-2 border-dashed border-white/30 rounded-xl p-3 text-center bg-white/10">
+        <label className="flex flex-col items-center justify-center border-2 border-dashed border-white/30 rounded-xl p-4 bg-white/10 cursor-pointer hover:bg-white/20 transition">
+          <span className="text-xs text-white/70 mb-2">
+            Tap to upload image
+          </span>
           <input
             type="file"
             accept="image/*"
             onChange={(e) => setImageFile(e.target.files[0])}
-            className="w-full text-sm"
+            className="hidden"
           />
-        </div>
+        </label>
 
         <p className="text-center text-xs text-white/60 my-2">OR</p>
 
@@ -134,7 +114,7 @@ export default function UploadForm() {
           value={imageUrl}
           onChange={(e) => setImageUrl(e.target.value)}
           className="w-full p-2 rounded-lg bg-white/20 border border-white/30 
-                     text-white placeholder-white/50 focus:outline-none"
+                     text-white placeholder-white/50 focus:outline-none text-sm"
         />
       </div>
 
@@ -142,7 +122,8 @@ export default function UploadForm() {
       <div>
         <button
           onClick={getLocation}
-          className="w-full py-2 rounded-lg bg-gradient-to-r from-blue-500 to-purple-500 
+          className="w-full py-2 rounded-lg text-sm md:text-base
+                     bg-gradient-to-r from-blue-500 to-purple-500 
                      hover:scale-105 transition shadow-lg"
         >
           📍 Get Current Location
@@ -159,13 +140,13 @@ export default function UploadForm() {
       <textarea
         placeholder="Description..."
         className="w-full p-3 rounded-xl bg-white/20 border border-white/30 
-                   text-white placeholder-white/50 focus:outline-none"
+                   text-white placeholder-white/50 focus:outline-none text-sm"
       />
 
       {/* 🚀 SUBMIT */}
       <button
         onClick={handleSubmit}
-        className="w-full py-2 rounded-xl font-semibold 
+        className="w-full py-2 md:py-3 rounded-xl font-semibold text-sm md:text-base
                    bg-gradient-to-r from-blue-500 to-purple-500 
                    hover:scale-105 transition shadow-xl"
       >
@@ -179,4 +160,3 @@ export default function UploadForm() {
     </div>
   );
 }
-

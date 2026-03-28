@@ -1,8 +1,11 @@
+"use client";
+
 import "leaflet/dist/leaflet.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import Sidebar from "@/components/Sidebar"; // ✅ keep this
+import Sidebar from "@/components/Sidebar";
+import { useState } from "react";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -19,21 +22,60 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
     <html lang="en" className="h-full">
       <body className={`${inter.className} h-full overflow-hidden`}>
 
         <div className="flex h-full">
 
-          {/* 🟣 SIDEBAR */}
-          <Sidebar />
+          {/* 🟣 SIDEBAR (DESKTOP) */}
+          <div className="hidden md:block">
+            <Sidebar />
+          </div>
 
-          {/* 📄 CONTENT */}
-          <main className="flex-1 h-full ">
+          {/* 📱 MOBILE SIDEBAR (DRAWER) */}
+          {isOpen && (
+            <div className="fixed inset-0 z-50 flex">
+              
+              {/* Overlay */}
+              <div
+                className="absolute inset-0 bg-black/50"
+                onClick={() => setIsOpen(false)}
+              />
+
+              {/* Drawer */}
+              <div className="relative w-64 bg-black">
+                <Sidebar />
+              </div>
+            </div>
+          )}
+
+          {/* 📄 MAIN CONTENT */}
+          <main className="flex-1 h-full overflow-y-auto">
+
+            {/* 📱 MOBILE HEADER */}
+            <div className="md:hidden flex items-center justify-between p-4 bg-black/30 backdrop-blur border-b border-white/10">
+              
+              <button
+                onClick={() => setIsOpen(true)}
+                className="text-white text-2xl"
+              >
+                ☰
+              </button>
+
+              <h1 className="text-white font-semibold text-sm">
+                CivicGuard
+              </h1>
+
+              <div /> {/* empty for spacing */}
+            </div>
+
             {children}
           </main>
 
-        </div>  
+        </div>
 
       </body>
     </html>

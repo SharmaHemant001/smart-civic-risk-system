@@ -31,32 +31,26 @@ export default function Dashboard() {
   const [topAreas, setTopAreas] = useState<any[]>([]);
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
 
-  // ✅ FETCH ISSUES
   useEffect(() => {
     const fetchIssues = async () => {
       try {
         const res = await API.get("/issues");
-
         const sorted = res.data.sort(
           (a: any, b: any) =>
             new Date(b.createdAt || 0).getTime() -
             new Date(a.createdAt || 0).getTime()
         );
-
         setIssues(sorted);
       } catch (err) {
         console.error(err);
       }
     };
-
     fetchIssues();
   }, []);
 
-  // 🔥 LOCATION FETCH
   useEffect(() => {
     const fetchLocations = async () => {
       const map: any = {};
-
       for (let issue of issues.slice(0, 10)) {
         const key = `${issue.latitude}-${issue.longitude}`;
 
@@ -64,11 +58,7 @@ export default function Dashboard() {
           map[issue._id] = locationCache[key];
         } else {
           try {
-            const name = await getLocationName(
-              issue.latitude,
-              issue.longitude
-            );
-
+            const name = await getLocationName(issue.latitude, issue.longitude);
             const finalName = name || "Unknown";
             locationCache[key] = finalName;
             map[issue._id] = finalName;
@@ -77,21 +67,18 @@ export default function Dashboard() {
           }
         }
       }
-
       setLocations(map);
     };
 
     if (issues.length > 0) fetchLocations();
   }, [issues]);
 
-  // 🔥 TOP AREAS
   useEffect(() => {
     const fetchAreaStats = async () => {
       const map: any = {};
 
       for (let issue of issues.slice(0, 15)) {
         const key = `${issue.latitude}-${issue.longitude}`;
-
         let name = locationCache[key];
 
         if (!name) {
@@ -114,7 +101,7 @@ export default function Dashboard() {
 
       const sorted = Object.values(map)
         .sort((a: any, b: any) => b.count - a.count)
-        .slice(0, 5);
+        .slice(0, 3); // ✅ only 3
 
       setTopAreas(sorted);
     };
@@ -122,13 +109,10 @@ export default function Dashboard() {
     if (issues.length > 0) fetchAreaStats();
   }, [issues]);
 
-  // 📊 STATS
   const total = issues.length;
   const high = issues.filter((i) => i.riskScore === "High").length;
   const resolved = issues.filter((i) => i.status === "resolved").length;
-  const pending = issues.filter((i) => i.status === "pending").length;
   const inProgress = issues.filter((i) => i.status === "in-progress").length;
-  const invalid = issues.filter((i) => i.status === "invalid").length;
 
   const today = issues.filter((i) => {
     if (!i.createdAt) return false;
@@ -136,19 +120,17 @@ export default function Dashboard() {
   }).length;
 
   return (
-    <div className="h-full overflow-y-auto bg-gradient-to-br from-indigo-500 to-purple-500/10 p-6">
+    <div className="h-full overflow-y-auto bg-gradient-to-br from-indigo-500 to-purple-500/10 p-4 md:p-6">
 
       {/* HEADER */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-white">
-          Dashboard Overview
-        </h1>
-      </div>
+      <h1 className="text-xl md:text-3xl font-bold text-white mb-4 md:mb-6">
+        Dashboard Overview
+      </h1>
 
-      <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 space-y-8 shadow-2xl">
+      <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-4 md:p-6 space-y-6 md:space-y-8 shadow-2xl">
 
         {/* STATS */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 md:gap-4">
           <StatCard title="Today" value={today} />
           <StatCard title="High Risk" value={high} />
           <StatCard title="Resolved" value={resolved} />
@@ -158,71 +140,63 @@ export default function Dashboard() {
 
         {/* ALERT */}
         {topAreas.length > 0 && (
-          <div className="bg-red-500/10 border border-red-500/20 text-red-300 px-4 py-2 rounded-xl text-sm">
-            ⚠ High risk concentration detected in {topAreas[0].area}
+          <div className="bg-red-500/10 border border-red-500/20 text-red-300 px-3 md:px-4 py-2 rounded-xl text-xs md:text-sm">
+            ⚠ High risk concentration in {topAreas[0].area}
           </div>
         )}
 
         {/* CHART */}
-        <div className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-xl">
-          <h2 className="text-white font-semibold mb-1">
+        <div className="bg-white/10 rounded-2xl p-4 md:p-6">
+          <h2 className="text-white font-semibold mb-2 text-sm md:text-lg">
             📊 Issues Distribution
           </h2>
           <Chart issues={issues} />
         </div>
 
+        {/* 🔥 TOP AREAS */}
+        {topAreas.length > 0 && (
+          <div className="bg-white/10 rounded-2xl p-4 md:p-6">
+            <h2 className="text-white font-semibold mb-4 text-sm md:text-lg">
+              🔥 Top Areas
+            </h2>
 
-          {/* 🔥 TOP AREAS SECTION */}
-{topAreas.length > 0 && (
-  <div className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-xl">
-    <h2 className="text-white font-semibold mb-4 flex items-center gap-2">
-      🔥 Top Areas
-    </h2>
+            <div className="flex flex-col gap-2 md:grid md:grid-cols-2">
+              {topAreas.map((area, index) => (
+                <div
+                  key={index}
+                  className="flex justify-between py-2 md:py-3 border-b border-white/10"
+                >
+                  <span className="text-white text-sm md:text-base truncate">
+                    {area.area}
+                  </span>
 
-    {topAreas.map((area, index) => (
-      <div
-        key={index}
-        className="flex justify-between items-center py-3 border-b border-white/10 last:border-none"
-      >
-        <span className="text-white/80 font-medium">
-          {area.area}
-        </span>
-
-        <span className="text-white font-semibold">
-          {area.count}
-        </span>
-      </div>
-    ))}
-  </div>
-)}
-
+                  <span className="bg-white/20 px-3 py-1 rounded-full text-xs md:text-sm">
+                    {area.count}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* TABLE */}
-        <div className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
-          <h2 className="text-white font-semibold mb-4">
+        <div className="bg-white/10 rounded-2xl p-4 md:p-6">
+          <h2 className="text-white font-semibold mb-4 text-sm md:text-lg">
             Latest Reports
           </h2>
 
-          {issues.slice(0, 5).map((issue) => (
+          {issues.slice(0, 3).map((issue) => (
             <div
               key={issue._id}
-              onClick={() => {
-                localStorage.setItem("selectedIssue", JSON.stringify(issue));
-                window.location.href="/driver";
-              }}
-              className="flex items-center justify-between py-4 border-b border-white/10 hover:bg-white/10 rounded-lg px-3 transition cursor-pointer hover:scale-[1.01]"
+              className="flex flex-col md:flex-row md:items-center justify-between gap-3 py-3 border-b border-white/10"
             >
               <div className="flex items-center gap-3">
                 <img
                   src={issue.imageUrl}
-                  onError={(e) => {
-                    e.currentTarget.src = "/placeholder.png";
-                  }}
-                  className="w-12 h-12 rounded-lg object-cover"
+                  className="w-10 h-10 md:w-12 md:h-12 rounded-lg object-cover"
                 />
-
                 <div>
-                  <p className="text-white capitalize font-medium">
+                  <p className="text-white text-sm md:text-base">
                     {issue.issueType}
                   </p>
                   <p className="text-xs text-white/60">
@@ -231,49 +205,26 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-6 min-w-[140px] justify-end">
-                <div className="text-white font-semibold text-sm w-12 text-center">
-                  {issue.votes}
-                </div>
-
-                <span className={`text-xs px-3 py-1 rounded-full text-center w-[110px] ${
-                  issue.status === "resolved"
-                    ? "bg-green-500/20 text-green-300"
-                    : issue.status === "invalid"
-                    ? "bg-red-500/20 text-red-300"
-                    : issue.status === "in-progress"
-                    ? "bg-blue-500/20 text-blue-300"
-                    : "bg-yellow-500/20 text-yellow-300"
-                }`}>
-                  {issue.status || "pending"}
+              <div className="flex justify-between md:justify-end gap-4 text-sm">
+                <span className="text-white">{issue.votes}</span>
+                <span className="text-white/80 text-xs md:text-sm">
+                  {issue.status}
                 </span>
               </div>
             </div>
           ))}
         </div>
 
-        {/* 🔥 SELECTED ISSUE INFO (NEW FEATURE) */}
-        {selectedIssue && (
-          <div className="bg-indigo-500/10 border border-indigo-400/20 p-4 rounded-xl text-white">
-            📍 Selected: {selectedIssue.issueType}  
-            <br />
-            Lat: {selectedIssue.latitude}, Lng: {selectedIssue.longitude}
-          </div>
-        )}
-
       </div>
     </div>
   );
 }
 
-// CARD
 function StatCard({ title, value }: any) {
   return (
-    <div className="bg-white/10 backdrop-blur-xl border border-white/10 p-5 rounded-2xl shadow hover:scale-105 transition">
-      <p className="text-white/60 text-sm">{title}</p>
-      <h2 className="text-3xl font-bold mt-2 text-white text-center">
-        {value}
-      </h2>
+    <div className="bg-white/10 p-3 md:p-5 rounded-xl text-center">
+      <p className="text-white/60 text-xs md:text-sm">{title}</p>
+      <h2 className="text-xl md:text-3xl text-white font-bold">{value}</h2>
     </div>
   );
 }
