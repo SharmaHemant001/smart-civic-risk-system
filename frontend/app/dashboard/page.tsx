@@ -1,15 +1,14 @@
 "use client";
+
 import dynamic from "next/dynamic";
+import { useEffect, useState } from "react";
+import API from "../../utils/api";
+import Chart from "../../components/Chart";
 
 const MapComponent = dynamic(
   () => import("@/components/MapComponent"),
   { ssr: false }
 );
-
-import { useEffect, useState } from "react";
-import API from "../../utils/api";
-import Chart from "../../components/Chart";
-import getLocationName from "../../../backend/services/getLocationName";
 
 type Issue = {
   _id: string;
@@ -20,95 +19,56 @@ type Issue = {
   votes: number;
   riskScore: string;
   status: string;
+  locationName?: string;
   createdAt?: string;
 };
 
-const locationCache: any = {};
-
 export default function Dashboard() {
   const [issues, setIssues] = useState<Issue[]>([]);
-  const [locations, setLocations] = useState<any>({});
   const [topAreas, setTopAreas] = useState<any[]>([]);
-  const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
 
+  // =========================
+  // FETCH ISSUES
+  // =========================
   useEffect(() => {
     const fetchIssues = async () => {
       try {
         const res = await API.get("/issues");
+
         const sorted = res.data.sort(
           (a: any, b: any) =>
             new Date(b.createdAt || 0).getTime() -
             new Date(a.createdAt || 0).getTime()
         );
+
         setIssues(sorted);
       } catch (err) {
         console.error(err);
       }
     };
+
     fetchIssues();
   }, []);
 
+  // =========================
+  // FETCH TOP AREAS
+  // =========================
   useEffect(() => {
-    const fetchLocations = async () => {
-      const map: any = {};
-      for (let issue of issues.slice(0, 10)) {
-        const key = `${issue.latitude}-${issue.longitude}`;
-
-        if (locationCache[key]) {
-          map[issue._id] = locationCache[key];
-        } else {
-          try {
-            const name = await getLocationName(issue.latitude, issue.longitude);
-            const finalName = name || "Unknown";
-            locationCache[key] = finalName;
-            map[issue._id] = finalName;
-          } catch {
-            map[issue._id] = "Unknown";
-          }
-        }
+    const fetchTopAreas = async () => {
+      try {
+        const res = await API.get("/issues/top-areas");
+        setTopAreas(res.data);
+      } catch (err) {
+        console.error(err);
       }
-      setLocations(map);
     };
 
-    if (issues.length > 0) fetchLocations();
-  }, [issues]);
+    fetchTopAreas();
+  }, []);
 
-  useEffect(() => {
-    const fetchAreaStats = async () => {
-      const map: any = {};
-
-      for (let issue of issues.slice(0, 15)) {
-        const key = `${issue.latitude}-${issue.longitude}`;
-        let name = locationCache[key];
-
-        if (!name) {
-          try {
-            name = await getLocationName(issue.latitude, issue.longitude);
-            locationCache[key] = name;
-          } catch {
-            name = "Unknown";
-          }
-        }
-
-        if (!name || name === "Unknown") continue;
-
-        if (!map[name]) {
-          map[name] = { area: name, count: 0 };
-        }
-
-        map[name].count++;
-      }
-
-      const sorted = Object.values(map)
-        .sort((a: any, b: any) => b.count - a.count)
-        .slice(0, 3); // ✅ only 3
-
-      setTopAreas(sorted);
-    };
-
-    if (issues.length > 0) fetchAreaStats();
-  }, [issues]);
-
+  // =========================
+  // STATS
+  // =========================
   const total = issues.length;
   const high = issues.filter((i) => i.riskScore === "High").length;
   const resolved = issues.filter((i) => i.status === "resolved").length;
@@ -141,7 +101,7 @@ export default function Dashboard() {
         {/* ALERT */}
         {topAreas.length > 0 && (
           <div className="bg-red-500/10 border border-red-500/20 text-red-300 px-3 md:px-4 py-2 rounded-xl text-xs md:text-sm">
-            ⚠ High risk concentration in {topAreas[0].area}
+            ⚠ High risk concentration in {topAreas[0]._id}
           </div>
         )}
 
@@ -153,63 +113,51 @@ export default function Dashboard() {
           <Chart issues={issues} />
         </div>
 
-        {/* 🔥 TOP AREAS */}
-        
-{/* 🔥 Top Areas */}
-<div className="mt-6 bg-white/5 backdrop-blur-xl rounded-2xl p-5 border border-white/10">
+        {/* TOP AREAS */}
+        <div className="bg-white/5 backdrop-blur-xl rounded-2xl p-5 border border-white/10">
+          <h2 className="text-white text-lg font-semibold mb-4">
+            🔥 Top Areas
+          </h2>
 
-  <h2 className="text-white text-lg font-semibold mb-4 flex items-center gap-2">
-    🔥 Top Areas
-  </h2>
+          <div className="flex gap-3 overflow-x-auto scrollbar-hide">
+            {topAreas
+              .filter((area: any) => area._id !== "Unknown")
+              .map((area: any, index: number) => (
+                <div
+                  key={index}
+                  className="min-w-[140px] px-4 py-3 rounded-xl bg-white/10 text-white text-center hover:bg-white/20 transition"
+                >
+                  {area._id}
+                </div>
+              ))}
+          </div>
+        </div>
 
-  <div className="flex gap-3 overflow-x-auto scrollbar-hide">
-
-    {topAreas.map((area: any, index: number) => (
-      <div
-        key={index}
-        className="
-          min-w-[140px]
-          bg-white/10 backdrop-blur-md
-          border border-white/10
-          px-4 py-3
-          rounded-xl
-          text-white text-sm font-medium
-          hover:scale-105 hover:bg-white/20
-          transition duration-300
-          shadow-md
-          text-center
-        "
-      >
-        {area._id || "Unknown"}
-      </div>
-    ))}
-
-  </div>
-</div>
-
-
-        {/* TABLE */}
+        {/* LATEST REPORTS */}
         <div className="bg-white/10 rounded-2xl p-4 md:p-6">
           <h2 className="text-white font-semibold mb-4 text-sm md:text-lg">
             Latest Reports
           </h2>
 
-          {issues.slice(0, 3).map((issue) => (
+          {issues.slice(0, 6).map((issue) => (
             <div
               key={issue._id}
               className="flex flex-col md:flex-row md:items-center justify-between gap-3 py-3 border-b border-white/10"
             >
               <div className="flex items-center gap-3">
+
                 <img
                   src={issue.imageUrl}
                   className="w-10 h-10 md:w-12 md:h-12 rounded-lg object-cover"
                 />
+
                 <div>
                   <p className="text-white text-sm md:text-base">
                     {issue.issueType}
                   </p>
+
                   <p className="text-xs text-white/60">
-                    {locations[issue._id] || "Fetching..."}
+                    📍 {issue.locationName || "Unknown"}
                   </p>
                 </div>
               </div>

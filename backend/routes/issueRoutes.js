@@ -72,3 +72,5 @@ router.post("/:id/upvote", async (req, res) => {
     res.status(500).json({ error: "Upvote failed" });
   }
 });
+
+export default router;
