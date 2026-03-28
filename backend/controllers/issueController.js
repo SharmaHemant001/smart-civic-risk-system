@@ -32,7 +32,7 @@ export const uploadIssue = async (req, res) => {
     try {
       locationName = await getLocationName(latitude, longitude);
     } catch(err) {
-      console.log("location fetch failed");
+      console.log("location fetch failed",err.message);
     }
 
     const user = await User.findOne();
@@ -167,12 +167,14 @@ export const updateStatus = async (req, res) => {
   }
 };
 
-/* =========================
-   🔥 GET TOP AREAS
-========================= */
 export const getTopAreas = async (req, res) => {
   try {
     const topAreas = await Issue.aggregate([
+      {
+        $match: {
+          locationName: { $nin: [null, "", "Unknown"] } // ✅ FIX
+        }
+      },
       {
         $group: {
           _id: "$locationName",
