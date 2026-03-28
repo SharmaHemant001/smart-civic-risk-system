@@ -49,7 +49,12 @@ app.use("/api/location", locationRoutes);
 /* =====================================
    ✅ STATIC FILES
 ===================================== */
-app.use("/uploads", express.static("uploads"));
+import path from "path";
+
+app.use(
+  "/uploads",
+  express.static(path.join(process.cwd(), "uploads"))
+);
 
 /* =====================================
    ✅ HEALTH CHECK

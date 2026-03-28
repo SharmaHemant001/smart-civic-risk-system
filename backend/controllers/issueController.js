@@ -2,8 +2,7 @@ import Issue from "../models/Issue.js";
 import { checkDuplicate } from "../services/duplicateService.js";
 import { calculateRisk } from "../services/riskService.js";
 import User from "../models/User.js";
-
-const locationName = await getLocationName(latitude, longitude);
+import { getLocationName } from "../services/locationService.js"; 
 
 /* =========================
    🚀 UPLOAD ISSUE
@@ -26,6 +25,14 @@ export const uploadIssue = async (req, res) => {
 
     if ((!imageUrl && !imagePath) || !latitude || !longitude || !issueType) {
       return res.status(400).json({ message: "Missing fields" });
+    }
+
+    // ✅ FIX: calculate location inside function
+    let locationName = "Unknown";
+    try {
+      locationName = await getLocationName(latitude, longitude);
+    } catch {
+      console.log("Location fetch failed");
     }
 
     const user = await User.findOne();
@@ -132,11 +139,7 @@ export const updateStatus = async (req, res) => {
       return res.status(404).json({ message: "Issue not found" });
     }
 
-    if (issue.status === status) {
-      return res.json(issue);
-    }
-
-    if (issue.status === "resolved") {
+    if (issue.status === status || issue.status === "resolved") {
       return res.json(issue);
     }
 
@@ -172,7 +175,7 @@ export const getTopAreas = async (req, res) => {
     const topAreas = await Issue.aggregate([
       {
         $group: {
-          _id: "$locationName", // change if your field is different
+          _id: "$locationName",
           count: { $sum: 1 }
         }
       },
@@ -180,7 +183,7 @@ export const getTopAreas = async (req, res) => {
         $sort: { count: -1 }
       },
       {
-        $limit: 5
+        $limit: 3 // ✅ show only top 3
       }
     ]);
 
