@@ -18,7 +18,7 @@ export const uploadIssue = async (req, res) => {
     const imageUrl = req.body.imageUrl || null;
 
     // ✅ FIXED BASE URL
-    const baseUrl = process.env.BASE_URL || "http://localhost:5000";
+    const baseUrl = `${req.protocol}://${req.get("host")}`;
 
     const imagePath = req.file
       ? `${baseUrl}/${req.file.path.replace(/\\/g, "/")}`
