@@ -93,30 +93,29 @@ export default function DriverPage() {
 
 
   return (
-    <div className="relative w-full h-full">
+    <div className="flex h-full min-h-0 flex-col md:relative md:block">
 
       {/* 🔥 TOP CONTROLS */}
-      <div className="absolute top-3 left-3 right-3 z-[1000] flex flex-col gap-3 md:top-5 md:left-5 md:right-5 md:flex-row md:items-start md:justify-between pointer-events-none">
-        <div className="pointer-events-auto w-full md:w-auto">
+      <div className="z-[1000] flex flex-col gap-3 p-3 md:absolute md:top-5 md:left-5 md:right-5 md:flex-row md:items-start md:justify-between md:pointer-events-none md:p-0">
+        <div className="w-full md:pointer-events-auto md:w-auto">
           <FilterPanel setFilter={setFilter} />
         </div>
 
-        <div className="pointer-events-auto w-full md:max-w-[320px]">
+        <div className="w-full md:pointer-events-auto md:max-w-[320px]">
           <RouteInput setRoute={setRoute} setRouteIssues={setRouteIssues} />
         </div>
       </div>
 
       {/* ⚠ ROUTE ALERT */}
       {routeIssues.length > 0 && (
-        <div className="absolute top-44 left-1/2 -translate-x-1/2 z-[1000] md:top-5
-                        bg-yellow-500 text-white px-5 py-2 rounded-xl shadow-lg">
+        <div className="mx-3 mb-3 rounded-xl bg-yellow-500 px-5 py-2 text-white shadow-lg md:absolute md:top-5 md:left-1/2 md:z-[1000] md:-translate-x-1/2">
           ⚠ {routeIssues.length} issue(s) on your route
         </div>
       )}
 
       {/* 🚗 EMPTY STATE */}
       {!route && !selectedIssue && (
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 
+        <div className="absolute top-1/2 left-1/2 z-[900] -translate-x-1/2 
                         -translate-y-1/2 text-white/60 bg-black/40 
                         px-6 py-3 rounded-xl backdrop-blur">
           🚗 Enter route to view issues
@@ -124,7 +123,7 @@ export default function DriverPage() {
       )}
 
       {/* 🗺️ MAP */}
-      <div className="h-full w-full">
+      <div className="min-h-0 flex-1 w-full px-3 pb-3 md:h-full md:px-0 md:pb-0">
         <MapComponent
           issues={route ? issues : displayIssues}                 // all issues
           route={route}
@@ -138,7 +137,7 @@ export default function DriverPage() {
     
 
       {/* 📊 LEGEND */}
-      <div className="absolute bottom-4 left-3 right-3 z-[1000] md:bottom-6 md:left-6 md:right-auto">
+      <div className="z-[1000] px-3 pb-3 md:absolute md:bottom-6 md:left-6 md:right-auto md:px-0 md:pb-0">
         <Legend />
       </div>
     </div>

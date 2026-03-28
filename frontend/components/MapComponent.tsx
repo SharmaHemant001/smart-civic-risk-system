@@ -283,7 +283,7 @@ export default function MapComponent({
   ).current;
 
   return (
-    <div className="w-full h-[300px] sm:h-[400px] md:h-full overflow-hidden rounded-2xl">
+    <div className="h-full min-h-[320px] w-full overflow-hidden rounded-2xl">
 
       <MapContainer
         key={selectedIssue?._id || "map"}
