@@ -7,6 +7,7 @@ import {
   uploadIssue,
   getIssues,
   voteIssue,
+  validateIssue,
   updateStatus,
   getTopAreas,
 } from "../controllers/issueController.js";
@@ -35,6 +36,9 @@ router.get("/", getIssues);
 
 // 👍 Vote
 router.post("/:id/vote", voteIssue);
+
+// ✅ Community Validation
+router.post("/:id/validate", validateIssue);
 
 // 🚗 Update Status
 router.patch("/:id/status", updateStatus);

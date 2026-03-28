@@ -40,6 +40,7 @@ createAdt: { type: Date, default: Date.now },
   },
 
   createdAt: { type: Date, default: Date.now },
+  resolvedAt: { type: Date, default: null },
   reportedBy: {
   type: mongoose.Schema.Types.ObjectId,
   ref: "User",

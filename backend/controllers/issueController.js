@@ -2,7 +2,9 @@ import Issue from "../models/Issue.js";
 import { checkDuplicate } from "../services/duplicateService.js";
 import { calculateRisk } from "../services/riskService.js";
 import User from "../models/User.js";
-import getLocationName from "../services/getLocationName.js"; // ✅ FIXED (default import)
+import getLocationName from "../services/getLocationName.js"; // FIXED (default import)
+
+const COMMUNITY_RESOLUTION_THRESHOLD = 3;
 
 /* =========================
    🚀 UPLOAD ISSUE
@@ -153,8 +155,52 @@ export const voteIssue = async (req, res) => {
   }
 };
 
+export const validateIssue = async (req, res) => {
+  try {
+    const { vote } = req.body;
+
+    if (!["yes", "no"].includes(vote)) {
+      return res.status(400).json({ message: "Invalid validation vote" });
+    }
+
+    const issue = await Issue.findById(req.params.id);
+
+    if (!issue) {
+      return res.status(404).json({ message: "Issue not found" });
+    }
+
+    issue.validationVotes[vote] += 1;
+
+    const yesVotes = issue.validationVotes.yes;
+    const noVotes = issue.validationVotes.no;
+
+    if (
+      yesVotes >= COMMUNITY_RESOLUTION_THRESHOLD &&
+      yesVotes > noVotes &&
+      issue.status !== "resolved"
+    ) {
+      issue.status = "resolved";
+      issue.resolvedAt = new Date();
+    }
+
+    await issue.save();
+
+    res.json({
+      message:
+        issue.status === "resolved"
+          ? "Issue marked as resolved by community"
+          : "Validation vote recorded",
+      issue,
+      threshold: COMMUNITY_RESOLUTION_THRESHOLD,
+    });
+  } catch (error) {
+    console.error("VALIDATION ERROR:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
 /* =========================
-   🚗 UPDATE STATUS
+   ?? UPDATE STATUS
 ========================= */
 export const updateStatus = async (req, res) => {
   try {
@@ -223,3 +269,6 @@ export const getTopAreas = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+
+
