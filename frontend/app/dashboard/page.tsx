@@ -1,14 +1,9 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import API from "../../utils/api";
 import Chart from "../../components/Chart";
-
-const MapComponent = dynamic(
-  () => import("@/components/MapComponent"),
-  { ssr: false }
-);
 
 type Issue = {
   _id: string;
@@ -24,9 +19,51 @@ type Issue = {
 };
 
 export default function Dashboard() {
+  const router = useRouter();
   const [issues, setIssues] = useState<Issue[]>([]);
   const [topAreas, setTopAreas] = useState<any[]>([]);
   const [loadingAreas, setLoadingAreas] = useState(true);
+
+  const getApiOrigin = () => {
+    const baseURL = API.defaults.baseURL || "";
+
+    try {
+      return new URL(baseURL).origin;
+    } catch {
+      return "";
+    }
+  };
+
+  const getIssueImageSrc = (imageUrl?: string) => {
+    if (!imageUrl) return "/favicon.ico";
+
+    const apiOrigin = getApiOrigin();
+
+    if (imageUrl.startsWith("/")) {
+      return apiOrigin ? `${apiOrigin}${imageUrl}` : imageUrl;
+    }
+
+    try {
+      const parsedUrl = new URL(imageUrl);
+
+      if (
+        parsedUrl.pathname.startsWith("/uploads/") &&
+        apiOrigin &&
+        parsedUrl.origin !== apiOrigin
+      ) {
+        return `${apiOrigin}${parsedUrl.pathname}`;
+      }
+
+      return imageUrl;
+    } catch {
+      return imageUrl;
+    }
+  };
+
+  const handleIssueClick = (issue: Issue) => {
+    localStorage.setItem("selectedIssue", JSON.stringify(issue));
+    router.push("/driver");
+  };
 
   // =========================
   // FETCH ISSUES
@@ -157,13 +194,18 @@ export default function Dashboard() {
           {issues.slice(0, 6).map((issue) => (
             <div
               key={issue._id}
-              className="flex flex-col md:flex-row md:items-center justify-between gap-3 py-3 border-b border-white/10"
+              onClick={() => handleIssueClick(issue)}
+              className="flex flex-col md:flex-row md:items-center justify-between gap-3 py-3 border-b border-white/10 cursor-pointer rounded-xl px-2 hover:bg-white/5 transition"
             >
               <div className="flex items-center gap-3">
 
                 <img
-                  src={issue.imageUrl}
+                  src={getIssueImageSrc(issue.imageUrl)}
+                  onError={(e) => {
+                    e.currentTarget.src = "/favicon.ico";
+                  }}
                   className="w-10 h-10 md:w-12 md:h-12 rounded-lg object-cover"
+                  alt={issue.issueType}
                 />
 
                 <div>
