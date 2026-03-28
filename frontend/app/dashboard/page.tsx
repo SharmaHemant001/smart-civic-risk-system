@@ -171,6 +171,32 @@ export default function Dashboard() {
           <Chart issues={issues} />
         </div>
 
+
+          {/* 🔥 TOP AREAS SECTION */}
+{topAreas.length > 0 && (
+  <div className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-xl">
+    <h2 className="text-white font-semibold mb-4 flex items-center gap-2">
+      🔥 Top Areas
+    </h2>
+
+    {topAreas.map((area, index) => (
+      <div
+        key={index}
+        className="flex justify-between items-center py-3 border-b border-white/10 last:border-none"
+      >
+        <span className="text-white/80 font-medium">
+          {area.area}
+        </span>
+
+        <span className="text-white font-semibold">
+          {area.count}
+        </span>
+      </div>
+    ))}
+  </div>
+)}
+
+
         {/* TABLE */}
         <div className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
           <h2 className="text-white font-semibold mb-4">

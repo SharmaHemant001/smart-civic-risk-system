@@ -8,6 +8,7 @@ import {
   getIssues,
   voteIssue,
   updateStatus,
+  getTopAreas,
 } from "../controllers/issueController.js";
 
 const router = express.Router();
@@ -194,6 +195,14 @@ router.get("/area-stats", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+  /* =========================
+   🔥 TOP AREAS
+========================= */
+router.get("/top-areas", getTopAreas);
+
+
+
 
 
 /* =========================

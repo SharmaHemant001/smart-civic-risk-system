@@ -3,6 +3,8 @@ import { checkDuplicate } from "../services/duplicateService.js";
 import { calculateRisk } from "../services/riskService.js";
 import User from "../models/User.js";
 
+const locationName = await getLocationName(latitude, longitude);
+
 /* =========================
    🚀 UPLOAD ISSUE
 ========================= */
@@ -66,6 +68,7 @@ export const uploadIssue = async (req, res) => {
       latitude,
       longitude,
       expiresAt,
+      locationName,
       votes: 1,
       riskScore,
       status: "pending",
@@ -157,6 +160,34 @@ export const updateStatus = async (req, res) => {
 
   } catch (error) {
     console.error("STATUS UPDATE ERROR:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+/* =========================
+   🔥 GET TOP AREAS
+========================= */
+export const getTopAreas = async (req, res) => {
+  try {
+    const topAreas = await Issue.aggregate([
+      {
+        $group: {
+          _id: "$locationName", // change if your field is different
+          count: { $sum: 1 }
+        }
+      },
+      {
+        $sort: { count: -1 }
+      },
+      {
+        $limit: 5
+      }
+    ]);
+
+    res.status(200).json(topAreas);
+
+  } catch (error) {
+    console.error("TOP AREAS ERROR:", error);
     res.status(500).json({ message: error.message });
   }
 };
