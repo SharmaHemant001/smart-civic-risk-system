@@ -64,7 +64,7 @@ export default function RouteInput({ setRoute, setRouteIssues }) {
   };
 
   return (
-    <div className="absolute top-6 right-6 z-[1000] w-80
+    <div className="w-full md:w-80
                  bg-black/70 backdrop-blur-xl text-white
                  border border-white/10
                  shadow-xl rounded-2xl p-5 space-y-4">

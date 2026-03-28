@@ -2,11 +2,11 @@
 export default function FilterPanel({ setFilter }) {
   return (
     <div
-      className="absolute top-4 left-4 z-[1000]
+      className="w-full md:w-auto
                  bg-black/70 backdrop-blur-xl 
                  border border-white/10 
                  shadow-[0_10px_40px_rgba(0,0,0,0.5)]
-                 rounded-2xl px-4 py-2
+                 rounded-2xl px-4 py-3
                  hover:scale-[1.02] transition"
     >
       <div className="flex items-center gap-2 text-white text-sm font-medium">
@@ -14,7 +14,7 @@ export default function FilterPanel({ setFilter }) {
 
         <select
           onChange={(e) => setFilter(e.target.value)}
-          className="bg-transparent text-white 
+          className="w-full bg-transparent text-white 
                      outline-none border-none 
                      cursor-pointer"
         >

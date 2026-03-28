@@ -95,19 +95,20 @@ export default function DriverPage() {
   return (
     <div className="relative w-full h-full">
 
-      {/* 🔥 FILTER */}
-      <div className="absolute top-5 left-5 z-[1000]">
-        <FilterPanel setFilter={setFilter} />
-      </div>
+      {/* 🔥 TOP CONTROLS */}
+      <div className="absolute top-3 left-3 right-3 z-[1000] flex flex-col gap-3 md:top-5 md:left-5 md:right-5 md:flex-row md:items-start md:justify-between pointer-events-none">
+        <div className="pointer-events-auto w-full md:w-auto">
+          <FilterPanel setFilter={setFilter} />
+        </div>
 
-      {/* 🔥 ROUTE INPUT */}
-      <div className="absolute top-5 right-5 z-[1000] w-[280px]">
-        <RouteInput setRoute={setRoute} setRouteIssues={setRouteIssues} />
+        <div className="pointer-events-auto w-full md:max-w-[320px]">
+          <RouteInput setRoute={setRoute} setRouteIssues={setRouteIssues} />
+        </div>
       </div>
 
       {/* ⚠ ROUTE ALERT */}
       {routeIssues.length > 0 && (
-        <div className="absolute top-5 left-1/2 -translate-x-1/2 z-[1000]
+        <div className="absolute top-44 left-1/2 -translate-x-1/2 z-[1000] md:top-5
                         bg-yellow-500 text-white px-5 py-2 rounded-xl shadow-lg">
           ⚠ {routeIssues.length} issue(s) on your route
         </div>
@@ -137,7 +138,7 @@ export default function DriverPage() {
     
 
       {/* 📊 LEGEND */}
-      <div className="absolute bottom-6 left-6 z-[1000]">
+      <div className="absolute bottom-4 left-3 right-3 z-[1000] md:bottom-6 md:left-6 md:right-auto">
         <Legend />
       </div>
     </div>

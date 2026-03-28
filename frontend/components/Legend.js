@@ -1,6 +1,6 @@
 export default function Legend() {
   return (
-    <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-md p-4 rounded-xl shadow-xl z-[1000] border border-gray-200 w-40">
+    <div className="mx-auto w-full max-w-[220px] bg-white/90 backdrop-blur-md p-4 rounded-xl shadow-xl z-[1000] border border-gray-200 md:mx-0 md:w-40">
       
       <h4 className="font-semibold text-sm mb-3 text-gray-800">
         Risk Levels
