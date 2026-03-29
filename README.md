@@ -184,6 +184,6 @@ CivicGuard helps people report, verify, and navigate civic issues using communit
 
 ---
 
-## Short Pitch
+## Overview
 
 CivicGuard turns scattered civic complaints into a structured, community-verified system that not only tracks issues but also helps users avoid risks in real time through route-based insights.
