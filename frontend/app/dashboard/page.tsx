@@ -31,6 +31,30 @@ export default function Dashboard() {
   const [locationChecked, setLocationChecked] = useState(false);
   const nearbyRadiusKm = 3;
 
+  const getRiskTone = (riskScore?: string) => {
+    if (riskScore === "Critical" || riskScore === "High") {
+      return {
+        label: "Critical",
+        dot: "bg-red-500",
+        badge: "bg-red-500/15 text-red-200 border-red-400/30",
+      };
+    }
+
+    if (riskScore === "Medium") {
+      return {
+        label: "Medium",
+        dot: "bg-yellow-400",
+        badge: "bg-yellow-400/15 text-yellow-100 border-yellow-300/30",
+      };
+    }
+
+    return {
+      label: "Low",
+      dot: "bg-green-500",
+      badge: "bg-green-500/15 text-green-200 border-green-400/30",
+    };
+  };
+
   const getApiOrigin = () => {
     const baseURL = API.defaults.baseURL || "";
 
@@ -211,7 +235,7 @@ export default function Dashboard() {
       <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-4 md:p-6 space-y-6 md:space-y-8 shadow-2xl">
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 md:gap-4">
           <StatCard title="Today" value={today} />
-          <StatCard title="Critical Risk" value={high} />
+          <StatCard title="Critical Risk" value={high} tone="critical" />
           <StatCard title="Resolved" value={resolved} />
           <StatCard title="In Progress" value={inProgress} />
           <StatCard title="Total" value={total} />
@@ -325,7 +349,15 @@ export default function Dashboard() {
                   />
 
                   <div>
-                    <p className="text-white text-sm md:text-base">{issue.issueType}</p>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="text-white text-sm md:text-base">{issue.issueType}</p>
+                      <span
+                        className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] md:text-xs ${getRiskTone(issue.riskScore).badge}`}
+                      >
+                        <span className={`h-2 w-2 rounded-full ${getRiskTone(issue.riskScore).dot}`}></span>
+                        {getRiskTone(issue.riskScore).label} Risk
+                      </span>
+                    </div>
                     <p className="text-xs text-white/70">
                       Location: {issue.locationName && issue.locationName !== "Unknown"
                         ? issue.locationName
@@ -347,11 +379,19 @@ export default function Dashboard() {
   );
 }
 
-function StatCard({ title, value }: any) {
+function StatCard({ title, value, tone = "default" }: any) {
+  const cardTone =
+    tone === "critical"
+      ? "bg-red-500/15 border border-red-400/30 shadow-[0_0_30px_rgba(239,68,68,0.15)]"
+      : "bg-white/10";
+
+  const titleTone = tone === "critical" ? "text-red-200" : "text-white/60";
+  const valueTone = tone === "critical" ? "text-red-100" : "text-white";
+
   return (
-    <div className="bg-white/10 p-3 md:p-5 rounded-xl text-center">
-      <p className="text-white/60 text-xs md:text-sm">{title}</p>
-      <h2 className="text-xl md:text-3xl text-white font-bold">{value}</h2>
+    <div className={`${cardTone} p-3 md:p-5 rounded-xl text-center`}>
+      <p className={`${titleTone} text-xs md:text-sm`}>{title}</p>
+      <h2 className={`${valueTone} text-xl md:text-3xl font-bold`}>{value}</h2>
     </div>
   );
 }
