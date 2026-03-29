@@ -5,6 +5,28 @@ import User from "../models/User.js";
 import getLocationName from "../services/getLocationName.js"; // FIXED (default import)
 
 const COMMUNITY_RESOLUTION_THRESHOLD = 3;
+const LOCATION_RISK_RADIUS = 0.02;
+
+const getNearbyIssueCount = async (latitude, longitude, excludeId = null) => {
+  const lat = Number(latitude);
+  const lon = Number(longitude);
+
+  if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+    return 0;
+  }
+
+  const query = {
+    latitude: { $gte: lat - LOCATION_RISK_RADIUS, $lte: lat + LOCATION_RISK_RADIUS },
+    longitude: { $gte: lon - LOCATION_RISK_RADIUS, $lte: lon + LOCATION_RISK_RADIUS },
+    status: { $nin: ["resolved", "invalid"] },
+  };
+
+  if (excludeId) {
+    query._id = { $ne: excludeId };
+  }
+
+  return Issue.countDocuments(query);
+};
 
 /* =========================
    🚀 UPLOAD ISSUE
@@ -61,10 +83,18 @@ export const uploadIssue = async (req, res) => {
       ) {
         existingIssue.locationName = locationName;
       }
-      existingIssue.riskScore = calculateRisk(
-        issueType,
-        existingIssue.votes
+      const nearbyIssueCount = await getNearbyIssueCount(
+        existingIssue.latitude,
+        existingIssue.longitude,
+        existingIssue._id
       );
+      const updatedRisk = calculateRisk({
+        issueType,
+        votes: existingIssue.votes,
+        nearbyIssueCount,
+      });
+      existingIssue.riskScore = updatedRisk.riskScore;
+      existingIssue.riskValue = updatedRisk.riskValue;
 
       await existingIssue.save();
 
@@ -75,7 +105,12 @@ export const uploadIssue = async (req, res) => {
     }
 
     // 🆕 CREATE ISSUE
-    const riskScore = calculateRisk(issueType, 1);
+    const nearbyIssueCount = await getNearbyIssueCount(latitude, longitude);
+    const initialRisk = calculateRisk({
+      issueType,
+      votes: 1,
+      nearbyIssueCount,
+    });
 
     const newIssue = await Issue.create({
       imageUrl: imageUrl || uploadedImageData,
@@ -85,7 +120,8 @@ export const uploadIssue = async (req, res) => {
       expiresAt,
       locationName,
       votes: 1,
-      riskScore,
+      riskScore: initialRisk.riskScore,
+      riskValue: initialRisk.riskValue,
       status: "pending",
       reportedBy: user ? user._id : null,
     });
@@ -144,7 +180,18 @@ export const voteIssue = async (req, res) => {
     }
 
     issue.votes += 1;
-    issue.riskScore = calculateRisk(issue.issueType, issue.votes);
+    const nearbyIssueCount = await getNearbyIssueCount(
+      issue.latitude,
+      issue.longitude,
+      issue._id
+    );
+    const updatedRisk = calculateRisk({
+      issueType: issue.issueType,
+      votes: issue.votes,
+      nearbyIssueCount,
+    });
+    issue.riskScore = updatedRisk.riskScore;
+    issue.riskValue = updatedRisk.riskValue;
 
     await issue.save();
 

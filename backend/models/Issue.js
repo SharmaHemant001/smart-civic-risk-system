@@ -35,8 +35,14 @@ createAdt: { type: Date, default: Date.now },
 
   riskScore: {
     type: String,
-    enum: ["Low", "Medium", "High"],
+    enum: ["Low", "Medium", "High", "Critical"],
     default: "Low",
+  },
+  riskValue: {
+    type: Number,
+    min: 0,
+    max: 100,
+    default: 0,
   },
 
   createdAt: { type: Date, default: Date.now },

@@ -18,7 +18,13 @@ type Issue = {
   latitude: number;
   longitude: number;
   riskScore: string;
+  riskValue?: number;
+  votes?: number;
+  status?: string;
 };
+
+const isElevatedRisk = (riskScore: string) =>
+  riskScore === "Critical" || riskScore === "High";
 
 type Props = {
   issues: Issue[];
@@ -186,7 +192,7 @@ function Routing({ route, issues, setRouteIssues }: any) {
 
           let risk = "low";
 
-          if (nearby.some((i: any) => i.riskScore === "High"))
+          if (nearby.some((i: any) => isElevatedRisk(i.riskScore)))
             risk = "high";
           else if (nearby.some((i: any) => i.riskScore === "Medium"))
             risk = "medium";
@@ -258,6 +264,79 @@ function Routing({ route, issues, setRouteIssues }: any) {
 }
 
 /* =========================
+   🔥 RISK HEATMAP
+========================= */
+function RiskHeatmap({ issues }: { issues: Issue[] }) {
+  const map = useMap();
+
+  useEffect(() => {
+    let heatLayer: any = null;
+    let isMounted = true;
+
+    const loadHeatmap = async () => {
+      await import("leaflet.heat");
+
+      const activeIssues = issues.filter((issue) => {
+        const lat = Number(issue.latitude);
+        const lon = Number(issue.longitude);
+
+        return (
+          Number.isFinite(lat) &&
+          Number.isFinite(lon) &&
+          !["resolved", "invalid"].includes(issue.status || "")
+        );
+      });
+
+      const heatPoints = activeIssues.map((issue) => {
+        const votes = Math.max(Number(issue.votes || 0), 0);
+        const baseWeight = Number.isFinite(Number(issue.riskValue))
+          ? Math.max(0.35, Math.min(Number(issue.riskValue) / 100, 1.1))
+          : isElevatedRisk(issue.riskScore)
+          ? 1
+          : issue.riskScore === "Medium"
+          ? 0.65
+          : 0.35;
+        const intensity = Math.min(baseWeight + Math.min(votes * 0.05, 0.25), 1.25);
+
+        return [Number(issue.latitude), Number(issue.longitude), intensity] as [
+          number,
+          number,
+          number
+        ];
+      });
+
+      if (!isMounted || heatPoints.length === 0) return;
+
+      heatLayer = (L as any).heatLayer(heatPoints, {
+        radius: 28,
+        blur: 22,
+        maxZoom: 17,
+        minOpacity: 0.25,
+        gradient: {
+          0.2: "#22c55e",
+          0.45: "#facc15",
+          0.75: "#f97316",
+          1.0: "#ef4444",
+        },
+      });
+
+      heatLayer.addTo(map);
+    };
+
+    loadHeatmap();
+
+    return () => {
+      isMounted = false;
+      if (heatLayer) {
+        map.removeLayer(heatLayer);
+      }
+    };
+  }, [issues, map]);
+
+  return null;
+}
+
+/* =========================
    🗺️ MAIN MAP
 ========================= */
 export default function MapComponent({
@@ -296,6 +375,8 @@ export default function MapComponent({
         <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" />
 
         <ZoomControl position="bottomright" />
+
+        <RiskHeatmap issues={issues} />
 
         {selectedIssue && <FocusMap issue={selectedIssue} />}
 

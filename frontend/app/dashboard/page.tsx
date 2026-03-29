@@ -13,6 +13,7 @@ type Issue = {
   longitude: number;
   votes: number;
   riskScore: string;
+  riskValue?: number;
   status: string;
   locationName?: string;
   createdAt?: string;
@@ -159,7 +160,9 @@ export default function Dashboard() {
   }, []);
 
   const total = issues.length;
-  const high = issues.filter((i) => i.riskScore === "High").length;
+  const high = issues.filter(
+    (i) => i.riskScore === "Critical" || i.riskScore === "High"
+  ).length;
   const resolved = issues.filter((i) => i.status === "resolved").length;
   const inProgress = issues.filter((i) => i.status === "in-progress").length;
 

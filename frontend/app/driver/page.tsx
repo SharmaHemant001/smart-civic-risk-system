@@ -15,6 +15,7 @@ type Issue = {
   longitude: number;
   votes: number;
   riskScore: string;
+  riskValue?: number;
   status: string;
 };
 
