@@ -103,13 +103,13 @@ Risk Levels:
 
 ## ?? Screenshots
 
-### Dashboard
+###  Report Issue
 ![Dashboard](./Screenshot%202026-03-29%20114303.png)
 
 ### Dashboard (Analytics)
 ![Dashboard2](./Screenshot%202026-03-29%20115453.png)
 
-### Report Issue
+###  
 ![Report](./Screenshot%202026-03-29%20115530.png)
 
 ### Heatmap
