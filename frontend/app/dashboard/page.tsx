@@ -256,13 +256,6 @@ export default function Dashboard() {
           </div>
         )}
 
-        <div className="bg-white/10 rounded-2xl p-4 md:p-6">
-          <h2 className="text-white font-semibold mb-2 text-sm md:text-lg">
-            Issues Distribution
-          </h2>
-          <Chart issues={issues} />
-        </div>
-
         <div className="bg-gradient-to-r from-amber-500/15 to-red-500/10 border border-amber-400/20 rounded-2xl p-4 md:p-6">
           <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
             <div>
@@ -354,9 +347,11 @@ export default function Dashboard() {
                   </div>
 
                   <div className="flex items-center gap-3 text-xs md:text-sm">
-                    <span className="rounded-lg bg-black/20 px-3 py-1.5 text-white/80">
-                      Risk {Math.round(Number(issue.riskValue || 0))}
-                    </span>
+                    {Number(issue.riskValue) > 0 && (
+                      <span className="rounded-lg bg-black/20 px-3 py-1.5 text-white/80">
+                        Risk {Math.round(Number(issue.riskValue))}
+                      </span>
+                    )}
                     <span className="rounded-lg bg-white/10 px-3 py-1.5 text-white/80">
                       {issue.votes} votes
                     </span>
@@ -365,6 +360,13 @@ export default function Dashboard() {
               ))
             )}
           </div>
+        </div>
+
+        <div className="bg-white/10 rounded-2xl p-4 md:p-6">
+          <h2 className="text-white font-semibold mb-2 text-sm md:text-lg">
+            Issues Distribution
+          </h2>
+          <Chart issues={issues} />
         </div>
 
         <div className="bg-white/5 backdrop-blur-xl rounded-2xl p-5 border border-white/10">
