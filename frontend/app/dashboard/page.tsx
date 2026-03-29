@@ -230,6 +230,47 @@ export default function Dashboard() {
           <Chart issues={issues} />
         </div>
 
+        <div className="bg-gradient-to-r from-amber-500/15 to-red-500/10 border border-amber-400/20 rounded-2xl p-4 md:p-6">
+          <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+            <div>
+              <h2 className="text-white font-semibold text-sm md:text-lg">
+                How Risk Score Works
+              </h2>
+              <p className="mt-1 text-xs md:text-sm text-white/70">
+                CivicGuard converts civic complaints into an explainable risk score instead of only listing reports.
+              </p>
+            </div>
+            <div className="rounded-xl bg-black/20 px-3 py-2 text-xs md:text-sm text-amber-200 border border-white/10">
+              Risk Score = Severity + Frequency + Location Priority
+            </div>
+          </div>
+
+          <div className="mt-4 grid gap-3 md:grid-cols-3">
+            <div className="rounded-xl bg-white/5 p-3 border border-white/10">
+              <p className="text-white text-sm font-medium">Severity</p>
+              <p className="mt-1 text-xs text-white/65">
+                Based on issue type like pothole, sewer, garbage, or construction.
+              </p>
+            </div>
+            <div className="rounded-xl bg-white/5 p-3 border border-white/10">
+              <p className="text-white text-sm font-medium">Frequency</p>
+              <p className="mt-1 text-xs text-white/65">
+                Increased by community votes and repeated reporting confidence.
+              </p>
+            </div>
+            <div className="rounded-xl bg-white/5 p-3 border border-white/10">
+              <p className="text-white text-sm font-medium">Location Priority</p>
+              <p className="mt-1 text-xs text-white/65">
+                Increased when more active civic issues exist nearby in the same area.
+              </p>
+            </div>
+          </div>
+
+          <p className="mt-4 text-xs md:text-sm text-white/70">
+            Weighted model: <span className="text-white font-medium">Severity × 0.5 + Frequency × 0.3 + Location Priority × 0.2</span>
+          </p>
+        </div>
+
         <div className="bg-white/5 backdrop-blur-xl rounded-2xl p-5 border border-white/10">
           <h2 className="text-white text-lg font-semibold mb-4">Top Areas</h2>
 

@@ -1,217 +1,234 @@
 # CivicGuard - Smart Civic Risk System
 
-CivicGuard is a platform that helps people report civic issues, verify them through the community, and understand risks around them — especially while traveling.
+CivicGuard is a community-driven civic risk platform that helps citizens report local problems, verify them through public feedback, and understand how those issues affect everyday travel.
 
-We built this after noticing how difficult it is to know about unsafe roads or local issues before actually encountering them.
+Instead of functioning like a passive complaint board, CivicGuard turns raw civic reports into visible, prioritized, route-aware risk intelligence.
 
----
+## Why This Matters
 
-## Problem
+Urban civic issues such as potholes, garbage piles, sewer leaks, and unsafe construction usually suffer from four major problems:
 
-Urban issues like potholes, garbage, sewer leaks, and unsafe construction are:
+- the same issue gets reported repeatedly without consolidation
+- genuine issues are hard to verify after reporting
+- authorities and users struggle to understand which issues matter most
+- route planning and civic reporting stay disconnected
 
-* reported multiple times without coordination
-* hard to verify after reporting
-* not prioritized effectively
-* completely disconnected from navigation and daily travel
+This creates noise instead of actionable public insight.
 
-Most existing systems collect complaints, but don’t help users understand real-world risk.
+## What CivicGuard Does
 
----
+CivicGuard combines reporting, verification, prioritization, and navigation into one workflow:
 
-## Solution
+- report issues with image and live location
+- merge duplicate nearby reports into a stronger civic signal
+- calculate weighted risk scores using severity, frequency, and location priority
+- visualize issue concentration through a live civic risk heatmap
+- help users inspect issues affecting their route
+- allow the community to validate whether issues are still unresolved or already fixed
 
-CivicGuard transforms simple reports into **actionable civic intelligence**.
+## Standout Features
 
-It allows users to:
-
-* report issues with location and images
-* avoid duplicate complaints
-* validate issues through community feedback
-* identify high-risk areas
-* view issues along their travel routes
-* visualize danger concentration through a live civic risk heatmap
-
----
-
-## Key Features
-
-### 1. Issue Reporting
+### 1. Smart Issue Reporting
 
 Users can report:
 
-* pothole
-* garbage
-* sewer
-* construction
+- pothole
+- garbage
+- sewer
+- construction
 
 Each report includes:
 
-* image
-* GPS location
-* issue type
+- image
+- GPS coordinates
+- issue type
+- readable location name through reverse geocoding
 
----
+### 2. Duplicate-Aware Civic Intelligence
 
-### 2. Duplicate-Aware System
+If multiple users report the same nearby issue, CivicGuard does not flood the system with repeated complaints.
 
-Nearby reports of the same issue are merged instead of creating clutter.
+Instead, it:
 
-This helps:
+- merges duplicate reports
+- increases the issue's confidence through votes
+- refreshes location and image data when needed
 
-* reduce noise
-* strengthen confidence through votes
+This keeps the system cleaner and makes repeated complaints more meaningful.
 
----
+### 3. Explainable Risk Scoring
 
-### 3. Community Validation
+This is the core intelligence layer of CivicGuard.
+
+Every issue is scored using:
+
+`Risk Score = Severity + Frequency + Location Priority`
+
+Weighted formula:
+
+`Risk Score = (Severity × 0.5) + (Frequency × 0.3) + (Location Priority × 0.2)`
+
+Where:
+
+- `Severity` depends on issue type
+- `Frequency` depends on community votes and repeated reporting
+- `Location Priority` depends on nearby active issue density
+
+Risk levels:
+
+- `80+` → Critical
+- `50-79` → Medium
+- `<50` → Low
+
+This makes the system transparent, explainable, and stronger than a simple complaint dashboard.
+
+### 4. Community Validation
+
+Citizens are not limited to reporting issues.
+
+They can also:
+
+- upvote existing issues
+- help confirm whether an issue has been resolved
+
+When enough community confirmations are received and positive feedback outweighs negative feedback, the system can mark an issue as resolved.
+
+### 5. Route-Aware Risk Visibility
+
+CivicGuard helps users go beyond reporting by connecting civic intelligence to mobility.
 
 Users can:
 
-* upvote issues
-* confirm if an issue is resolved
+- enter a route
+- view issues affecting that route
+- understand whether the route passes through risky civic zones
 
-Issues are marked resolved when:
+This makes the platform useful not only for authorities, but also for everyday citizens and commuters.
 
-* enough users confirm
-* positive votes outweigh negative
+### 6. Live Civic Risk Heatmap
 
----
-
-### 4. Risk Prioritization
-
-Issues are ranked based on:
-
-* issue severity
-* community frequency
-* local issue density
-
-This helps highlight critical problems.
-
-CivicGuard uses a weighted risk model:
-
-`riskScore = severity * 0.5 + frequency * 0.3 + locationWeight * 0.2`
-
-Risk levels are classified as:
-
-* `80+` → Critical
-* `50-79` → Medium
-* `<50` → Low
-
----
-
-### 5. Dashboard Insights
-
-The dashboard shows:
-
-* total and recent issues
-* high-risk areas
-* issue distribution
-* nearby issues needing verification
-
----
-
-### 6. Route-Based Risk View (Key Feature 🚀)
-
-Users can enter a route and see issues along the path.
-
-This helps:
-
-* avoid unsafe roads
-* make better travel decisions
-
----
-
-### 7. Live Civic Risk Heatmap
-
-The map includes a live heatmap layer built from issue locations, risk score, and community engagement.
+The map includes a live heatmap layer based on issue location, risk score, and community engagement.
 
 This helps users:
 
-* identify danger clusters instantly
-* understand which zones have concentrated civic risk
-* see the system as a true risk intelligence platform, not just a complaint list
+- instantly spot danger clusters
+- understand concentrated problem zones
+- interpret the system as a risk intelligence platform rather than a simple marker map
 
----
+### 7. Nearby Community Verification
+
+The dashboard highlights nearby issues that still need verification.
+
+This allows users to:
+
+- discover civic issues near them
+- open them directly on the map
+- participate in localized validation
 
 ### 8. Issue Lifecycle Management
 
-Each issue is re-evaluated over time.
+Issues are not left active forever without context.
 
-* inactive issues are updated automatically
-* system stays clean and relevant
+CivicGuard re-evaluates stale reports over time so that:
 
----
+- inactive issues do not clutter the system
+- unresolved issues remain visible
+- the civic intelligence layer stays relevant
 
 ## Workflow
 
-Report → Validate → Prioritize → Resolve → Navigate Safely
+`Report -> Merge -> Score -> Visualize -> Validate -> Resolve -> Navigate`
 
----
+## Dashboard Experience
 
-## Tech Overview
+The dashboard currently provides:
+
+- daily and total issue counts
+- critical-risk count
+- issue distribution insights
+- top affected areas
+- nearby issues needing verification
+- a clear explanation of how risk is scored
+
+## Tech Stack
 
 ### Frontend
 
-* Next.js, React, Tailwind
-* Leaflet (maps)
-* Leaflet Heatmap
-* Recharts
+- Next.js
+- React
+- Tailwind CSS
+- React Leaflet
+- Leaflet Heatmap
+- Recharts
 
 ### Backend
 
-* Node.js, Express
-* MongoDB
-* Cron jobs
-
----
+- Node.js
+- Express
+- MongoDB
+- Mongoose
+- cron-based lifecycle handling
 
 ## Demo Flow
 
-1. Report an issue
-2. See it on the map
-3. Observe the live civic risk heatmap
-4. Upvote / validate
-5. View dashboard insights
-6. Explore route-based risks
+1. Report a civic issue with image and location
+2. Let the system merge duplicates and assign a weighted risk score
+3. Open the dashboard to inspect critical zones and nearby issues
+4. View the issue on the map and observe the heatmap cluster
+5. Plan a route and inspect issues along that route
+6. Upvote or validate whether the issue has been resolved
 
----
+## What Makes CivicGuard Different
+
+Most civic apps stop at complaint collection.
+
+CivicGuard goes further by combining:
+
+- geotagged reporting
+- duplicate-aware aggregation
+- explainable weighted risk scoring
+- route-aware risk visibility
+- live heatmap-based danger clustering
+- community-driven issue resolution
+
+That combination turns scattered public complaints into structured civic risk intelligence.
 
 ## Current Scope
 
-✔ Reporting with image + location
-✔ Duplicate handling
-✔ Community validation
-✔ Dashboard analytics
-✔ Route-based issue visibility
-✔ Live civic risk heatmap
+- Reporting with image and location
+- Duplicate issue handling
+- Weighted risk scoring
+- Community validation
+- Dashboard analytics
+- Nearby verification discovery
+- Route-based issue visibility
+- Live civic risk heatmap
 
----
+## Current Limitations
 
-## Limitations
+- no authentication or identity-based voting yet
+- validation is browser/device based
+- no authority-side operational dashboard yet
+- advanced anti-fraud logic is still future work
 
-* no user authentication yet
-* validation is not identity-based
-* advanced fraud detection not implemented
+## Future Scope
 
----
+- trusted user accounts and validator reputation
+- municipal authority dashboard
+- push notifications for nearby users
+- stronger nearby-only validation controls
+- predictive civic trend analysis
+- smarter moderation and escalation workflows
 
-## Future Improvements
+## Ideal Use Case
 
-* user accounts and trust system
-* authority dashboard
-* notification system
-* smarter validation and moderation
+CivicGuard is designed for hackathon-scale civic intelligence use cases where citizens, communities, and local bodies need a simple but powerful way to:
 
----
+- report problems
+- identify priority zones
+- validate issue resolution
+- understand route-level civic risk
 
 ## Tagline
 
-CivicGuard helps people report, verify, and navigate civic issues using community-driven intelligence.
-
----
-
-## Overview
-
-CivicGuard turns scattered civic complaints into a structured, community-verified system that not only tracks issues but also helps users avoid risks in real time through route-based insights.
-
+Community-driven civic risk intelligence with route-aware safety insights.
