@@ -101,10 +101,19 @@ Risk Levels:
 
 ---
 
-## 📸 Screenshots
+## ?? Screenshots
 
+### Dashboard
+![Dashboard](./Screenshot%202026-03-29%20114303.png)
 
+### Dashboard (Analytics)
+![Dashboard2](./Screenshot%202026-03-29%20115453.png)
 
+### Report Issue
+![Report](./Screenshot%202026-03-29%20115530.png)
+
+### Heatmap
+![Heatmap](./Screenshot%202026-03-29%20120620.png)
 
 ---
 
@@ -160,3 +169,5 @@ CivicGuard:
 ## 🏁 Tagline
 
 Community-driven civic risk intelligence with route-aware safety insights.
+
+
