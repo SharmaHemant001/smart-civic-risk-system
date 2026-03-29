@@ -226,6 +226,15 @@ export default function Dashboard() {
         .slice(0, 6)
     : [];
 
+  const topCriticalIssues = [...issues]
+    .filter((issue) => issue.riskScore === "Critical" || issue.riskScore === "High")
+    .sort((a, b) => {
+      const riskDiff = Number(b.riskValue || 0) - Number(a.riskValue || 0);
+      if (riskDiff !== 0) return riskDiff;
+      return Number(b.votes || 0) - Number(a.votes || 0);
+    })
+    .slice(0, 3);
+
   return (
     <div className="h-full overflow-y-auto bg-gradient-to-br from-indigo-500 to-purple-500/10 p-4 md:p-6">
       <h1 className="text-xl md:text-3xl font-bold text-white mb-4 md:mb-6">
@@ -293,6 +302,69 @@ export default function Dashboard() {
           <p className="mt-4 text-xs md:text-sm text-white/70">
             Weighted model: <span className="text-white font-medium">Severity × 0.5 + Frequency × 0.3 + Location Priority × 0.2</span>
           </p>
+        </div>
+
+        <div className="bg-gradient-to-r from-red-500/15 to-orange-500/10 border border-red-400/20 rounded-2xl p-4 md:p-6">
+          <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+            <div>
+              <h2 className="text-white font-semibold text-sm md:text-lg">
+                Top 3 Critical Issues
+              </h2>
+              <p className="mt-1 text-xs md:text-sm text-white/70">
+                Helps authorities decide what to fix first by highlighting the most urgent civic risks.
+              </p>
+            </div>
+            <div className="rounded-xl bg-red-500/10 px-3 py-2 text-xs md:text-sm text-red-200 border border-red-400/20">
+              Prioritized using risk score + community signal
+            </div>
+          </div>
+
+          <div className="mt-4 space-y-3">
+            {topCriticalIssues.length === 0 ? (
+              <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/60">
+                No critical issues available right now.
+              </div>
+            ) : (
+              topCriticalIssues.map((issue, index) => (
+                <div
+                  key={issue._id}
+                  onClick={() => handleIssueClick(issue)}
+                  className="flex cursor-pointer flex-col gap-3 rounded-xl border border-white/10 bg-white/5 p-4 transition hover:bg-white/10 md:flex-row md:items-center md:justify-between"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-500/20 text-sm font-semibold text-red-200">
+                      {index + 1}
+                    </div>
+                    <div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="text-sm font-medium capitalize text-white md:text-base">
+                          {issue.issueType}
+                        </p>
+                        <span className="inline-flex items-center gap-1 rounded-full border border-red-400/30 bg-red-500/15 px-2 py-0.5 text-[11px] text-red-200 md:text-xs">
+                          <span className="h-2 w-2 rounded-full bg-red-500"></span>
+                          {(issue.riskScore === "High" ? "Critical" : issue.riskScore)} Risk
+                        </span>
+                      </div>
+                      <p className="text-xs text-white/70">
+                        {issue.locationName && issue.locationName !== "Unknown"
+                          ? issue.locationName
+                          : "Location unavailable"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 text-xs md:text-sm">
+                    <span className="rounded-lg bg-black/20 px-3 py-1.5 text-white/80">
+                      Risk {Math.round(Number(issue.riskValue || 0))}
+                    </span>
+                    <span className="rounded-lg bg-white/10 px-3 py-1.5 text-white/80">
+                      {issue.votes} votes
+                    </span>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </div>
 
         <div className="bg-white/5 backdrop-blur-xl rounded-2xl p-5 border border-white/10">
