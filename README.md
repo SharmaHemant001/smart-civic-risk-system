@@ -232,3 +232,4 @@ CivicGuard is designed for hackathon-scale civic intelligence use cases where ci
 ## Tagline
 
 Community-driven civic risk intelligence with route-aware safety insights.
+
