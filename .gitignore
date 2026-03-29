@@ -1,0 +1,17 @@
+node_modules/
+**/node_modules/
+.env
+.env*
+backend/.env
+uploads/
+backend/uploads/
+.next/
+out/
+build/
+dist/
+.DS_Store
+.vercel/
+*.tsbuildinfo
+next-env.d.ts
+frontend/AGENTS.md
+frontend/CLAUDE.md
