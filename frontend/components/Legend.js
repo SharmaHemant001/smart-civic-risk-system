@@ -8,7 +8,7 @@ export default function Legend() {
 
       <div className="flex items-center gap-2 text-sm text-gray-700 mb-1">
         <span className="w-3 h-3 bg-red-500 rounded-full"></span>
-        High Risk
+        Critical Risk
       </div>
 
       <div className="flex items-center gap-2 text-sm text-gray-700 mb-1">

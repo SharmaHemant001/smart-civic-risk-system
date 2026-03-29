@@ -35,7 +35,7 @@ export default function HomePage() {
           {/* 📊 STATS */}
           <div className="grid grid-cols-3 gap-4 md:flex md:gap-10 mt-8">
             <Stat value="120+" label="Issues" />
-            <Stat value="35" label="High Risk" />
+            <Stat value="35" label="Critical Risk" />
             <Stat value="75%" label="Resolved" />
           </div>
 

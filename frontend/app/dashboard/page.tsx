@@ -211,7 +211,7 @@ export default function Dashboard() {
       <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-4 md:p-6 space-y-6 md:space-y-8 shadow-2xl">
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 md:gap-4">
           <StatCard title="Today" value={today} />
-          <StatCard title="High Risk" value={high} />
+          <StatCard title="Critical Risk" value={high} />
           <StatCard title="Resolved" value={resolved} />
           <StatCard title="In Progress" value={inProgress} />
           <StatCard title="Total" value={total} />
@@ -219,7 +219,7 @@ export default function Dashboard() {
 
         {topAreas.length > 0 && (
           <div className="bg-red-500/10 border border-red-500/20 text-red-300 px-3 md:px-4 py-2 rounded-xl text-xs md:text-sm">
-            High risk concentration in {topAreas[0]._id}
+            Critical risk concentration in {topAreas[0]._id}
           </div>
         )}
 
