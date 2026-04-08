@@ -24,6 +24,7 @@ export default function Dashboard() {
   const [issues, setIssues] = useState<Issue[]>([]);
   const [topAreas, setTopAreas] = useState<any[]>([]);
   const [loadingAreas, setLoadingAreas] = useState(true);
+  const [stats, setStats] = useState<any>(null);
   const [userLocation, setUserLocation] = useState<{
     latitude: number;
     longitude: number;
@@ -142,12 +143,17 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchTopAreas = async () => {
       try {
-        const res = await API.get("/issues/top-areas");
-        const cleaned = res.data.filter(
+        const [areasRes, statsRes] = await Promise.all([
+          API.get("/issues/top-areas"),
+          API.get("/issues/stats"),
+        ]);
+
+        const cleaned = areasRes.data.filter(
           (a: any) => a._id && a._id !== "Unknown"
         );
 
         setTopAreas(cleaned);
+        setStats(statsRes.data);
       } catch (err) {
         console.error(err);
       } finally {
@@ -242,6 +248,25 @@ export default function Dashboard() {
       </h1>
 
       <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-4 md:p-6 space-y-6 md:space-y-8 shadow-2xl">
+        {stats && (
+          <div className="grid gap-3 md:grid-cols-3 mb-3">
+            <div className="rounded-2xl bg-slate-900/80 p-4 text-white">
+              <p className="text-xs uppercase text-slate-400">Backend Active Issues</p>
+              <p className="mt-2 text-2xl font-semibold">{stats.active}</p>
+            </div>
+            <div className="rounded-2xl bg-slate-900/80 p-4 text-white">
+              <p className="text-xs uppercase text-slate-400">Backend Total Issues</p>
+              <p className="mt-2 text-2xl font-semibold">{stats.total}</p>
+            </div>
+            <div className="rounded-2xl bg-slate-900/80 p-4 text-white">
+              <p className="text-xs uppercase text-slate-400">Most common risk</p>
+              <p className="mt-2 text-2xl font-semibold">
+                {stats.riskBreakdown?.sort((a: any, b: any) => b.count - a.count)[0]?._id || "None"}
+              </p>
+            </div>
+          </div>
+        )}
+
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 md:gap-4">
           <StatCard title="Today" value={today} />
           <StatCard title="Critical Risk" value={high} tone="critical" />

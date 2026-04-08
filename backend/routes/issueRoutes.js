@@ -1,7 +1,6 @@
 import express from "express";
 import multer from "multer";
 import Issue from "../models/Issue.js";
-import User from "../models/User.js";
 
 import {
   uploadIssue,
@@ -9,6 +8,7 @@ import {
   voteIssue,
   validateIssue,
   updateStatus,
+  getStats,
   getTopAreas,
 } from "../controllers/issueController.js";
 
@@ -47,7 +47,7 @@ router.patch("/:id/status", updateStatus);
    🔥 FIX: TOP AREAS ROUTE
 ========================= */
 
-// ✅ ADD THIS LINE (IMPORTANT)
+router.get("/stats", getStats);
 router.get("/top-areas", getTopAreas);
 
 /* =========================

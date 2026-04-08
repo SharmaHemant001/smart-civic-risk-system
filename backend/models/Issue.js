@@ -8,13 +8,14 @@ const issueSchema = new mongoose.Schema({
     enum: ["pothole", "sewer", "garbage", "construction"],
     required: true,
   },
-  
-expiresAt: {
-  type: Date,
-  default: Date.now,
-},
-createAdt: { type: Date, default: Date.now },
 
+  description: { type: String, default: "" },
+
+  expiresAt: {
+    type: Date,
+    default: Date.now,
+  },
+  createdAt: { type: Date, default: Date.now },
 
   latitude: { type: Number, required: true },
   longitude: { type: Number, required: true },
@@ -45,12 +46,11 @@ createAdt: { type: Date, default: Date.now },
     default: 0,
   },
 
-  createdAt: { type: Date, default: Date.now },
   resolvedAt: { type: Date, default: null },
   reportedBy: {
-  type: mongoose.Schema.Types.ObjectId,
-  ref: "User",
-},
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+  },
 
 });
 

@@ -36,7 +36,7 @@ export const uploadIssue = async (req, res) => {
   expiresAt.setDate(expiresAt.getDate() + 7);
 
   try {
-    const { latitude, longitude, issueType } = req.body;
+    const { latitude, longitude, issueType, description } = req.body;
 
     const imageUrl = req.body.imageUrl || null;
     const uploadedImageData = req.file
@@ -75,6 +75,9 @@ export const uploadIssue = async (req, res) => {
       existingIssue.votes += 1;
       if (imageUrl || uploadedImageData) {
         existingIssue.imageUrl = imageUrl || uploadedImageData;
+      }
+      if (description && !existingIssue.description) {
+        existingIssue.description = description;
       }
       if (
         locationName &&
@@ -115,6 +118,7 @@ export const uploadIssue = async (req, res) => {
     const newIssue = await Issue.create({
       imageUrl: imageUrl || uploadedImageData,
       issueType,
+      description: description || "",
       latitude,
       longitude,
       expiresAt,
@@ -287,30 +291,66 @@ export const updateStatus = async (req, res) => {
   }
 };
 
+export const getStats = async (req, res) => {
+  try {
+    const total = await Issue.countDocuments();
+    const active = await Issue.countDocuments({
+      status: { $in: ["pending", "in-progress", "need-review"] },
+    });
+
+    const riskBreakdown = await Issue.aggregate([
+      {
+        $group: {
+          _id: "$riskScore",
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+
+    const statusBreakdown = await Issue.aggregate([
+      {
+        $group: {
+          _id: "$status",
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+
+    res.status(200).json({
+      total,
+      active,
+      riskBreakdown,
+      statusBreakdown,
+    });
+  } catch (error) {
+    console.error("STATS ERROR:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
 export const getTopAreas = async (req, res) => {
   try {
     const topAreas = await Issue.aggregate([
       {
         $match: {
-          locationName: { $nin: [null, "", "Unknown"] } // ✅ FIX
-        }
+          locationName: { $nin: [null, "", "Unknown"] },
+        },
       },
       {
         $group: {
           _id: "$locationName",
-          count: { $sum: 1 }
-        }
+          count: { $sum: 1 },
+        },
       },
       {
-        $sort: { count: -1 }
+        $sort: { count: -1 },
       },
       {
-        $limit: 3
-      }
+        $limit: 3,
+      },
     ]);
 
     res.status(200).json(topAreas);
-
   } catch (error) {
     console.error("TOP AREAS ERROR:", error);
     res.status(500).json({ message: error.message });

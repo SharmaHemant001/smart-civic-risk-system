@@ -15,6 +15,7 @@ export default function UploadForm() {
   const [imageFile, setImageFile] = useState(null);
   const [issueType, setIssueType] = useState("");
   const [location, setLocation] = useState(null);
+  const [description, setDescription] = useState("");
   const [message, setMessage] = useState("");
 
   const getLocation = () => {
@@ -39,6 +40,7 @@ export default function UploadForm() {
         formData.append("issueType", issueType);
         formData.append("latitude", location.latitude);
         formData.append("longitude", location.longitude);
+        formData.append("description", description);
 
         await API.post("/issues/upload", formData);
       } else {
@@ -47,6 +49,7 @@ export default function UploadForm() {
           issueType,
           latitude: location.latitude,
           longitude: location.longitude,
+          description,
         });
       }
 
@@ -54,6 +57,7 @@ export default function UploadForm() {
       setImageUrl("");
       setImageFile(null);
       setIssueType("");
+      setDescription("");
     } catch (err) {
       console.error(err);
       setMessage("❌ Submission failed");
@@ -139,6 +143,8 @@ export default function UploadForm() {
       {/* 📝 DESCRIPTION */}
       <textarea
         placeholder="Description..."
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
         className="w-full p-3 rounded-xl bg-white/20 border border-white/30 
                    text-white placeholder-white/50 focus:outline-none text-sm"
       />

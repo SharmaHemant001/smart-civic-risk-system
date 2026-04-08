@@ -75,6 +75,18 @@ export default function MarkerPopup({ issue }) {
       <div className="space-y-3 min-w-[220px] bg-black/80 backdrop-blur-xl text-white rounded-xl p-4 shadow-2xl border border-white/10">
         <h3 className="font-semibold text-lg capitalize">{issue.issueType}</h3>
 
+        {issue.locationName && issue.locationName !== "Unknown" && (
+          <p className="text-xs text-gray-400 uppercase tracking-[0.15em]">
+            {issue.locationName}
+          </p>
+        )}
+
+        {issue.description && (
+          <p className="text-sm text-gray-300">
+            {issue.description}
+          </p>
+        )}
+
         <p className="text-sm text-gray-300">
           Risk: <span className="font-medium">{issue.riskScore}</span>
         </p>

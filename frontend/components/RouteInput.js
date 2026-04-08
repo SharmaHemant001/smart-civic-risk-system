@@ -6,6 +6,7 @@ export default function RouteInput({ setRoute, setRouteIssues }) {
   const [start, setStart] = useState("");
   const [end, setEnd] = useState("");
   const [loading, setLoading] = useState(false);
+  const [currentPosition, setCurrentPosition] = useState(null);
 
   // ✅ FIXED (JS + reliable API)
   const getCoordinates = async (place) => {
@@ -35,14 +36,16 @@ export default function RouteInput({ setRoute, setRouteIssues }) {
 
   const handleRoute = async () => {
     try {
-      if (!start || !end) {
-        alert("Enter both locations");
+      if ((!currentPosition && !start) || !end) {
+        alert("Enter both locations or use current location");
         return;
       }
 
       setLoading(true);
 
-      const startCoords = await getCoordinates(start);
+      const startCoords = currentPosition
+        ? currentPosition
+        : await getCoordinates(start);
       const endCoords = await getCoordinates(end);
 
       setRoute({
@@ -71,16 +74,43 @@ export default function RouteInput({ setRoute, setRouteIssues }) {
 
       <h2 className="text-sm font-semibold">🚗 Route Planner</h2>
 
-      <input
-        type="text"
-        placeholder="Start location"
-        value={start}
-        onChange={(e) => setStart(e.target.value)}
-        className="w-full px-3 py-2 rounded-lg
-                   bg-white/10 text-white placeholder-gray-400
-                   border border-white/20
-                   focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
+      <div className="flex flex-col gap-2">
+        <input
+          type="text"
+          placeholder="Start location"
+          value={currentPosition ? "My current location" : start}
+          onChange={(e) => {
+            setStart(e.target.value);
+            setCurrentPosition(null);
+          }}
+          disabled={Boolean(currentPosition)}
+          className="w-full px-3 py-2 rounded-lg
+                     bg-white/10 text-white placeholder-gray-400
+                     border border-white/20
+                     focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <button
+          type="button"
+          onClick={() => {
+            navigator.geolocation.getCurrentPosition(
+              (pos) => {
+                setCurrentPosition({
+                  lat: pos.coords.latitude,
+                  lon: pos.coords.longitude,
+                });
+                setStart("");
+              },
+              () => {
+                alert("Unable to get your current location.");
+              },
+              { enableHighAccuracy: true, timeout: 10000 }
+            );
+          }}
+          className="text-xs text-white/80 underline underline-offset-2"
+        >
+          Use my current location
+        </button>
+      </div>
 
       <input
         type="text"

@@ -33,6 +33,17 @@ export default function DriverPage() {
   // ✅ NEW: selected issue from dashboard
   const [selectedIssue, setSelectedIssue] = useState<any>(null);
 
+  const routeIssueCounts = useMemo(() => {
+    return {
+      total: routeIssues.length,
+      high: routeIssues.filter((issue) =>
+        issue.riskScore === "Critical" || issue.riskScore === "High"
+      ).length,
+      medium: routeIssues.filter((issue) => issue.riskScore === "Medium").length,
+      low: routeIssues.filter((issue) => issue.riskScore === "Low").length,
+    };
+  }, [routeIssues]);
+
   /* =====================================
      🔥 FETCH ISSUES
   ===================================== */
@@ -111,6 +122,33 @@ export default function DriverPage() {
       {routeIssues.length > 0 && (
         <div className="mx-3 mb-3 rounded-xl bg-yellow-500 px-5 py-2 text-white shadow-lg md:absolute md:top-5 md:left-1/2 md:z-[1000] md:-translate-x-1/2">
           ⚠ {routeIssues.length} issue(s) on your route
+        </div>
+      )}
+
+      {route && (
+        <div className="mx-3 mb-3 rounded-3xl bg-slate-900/80 border border-white/10 p-4 text-white shadow-2xl md:absolute md:top-20 md:left-5 md:right-auto md:z-[1000] md:max-w-2xl">
+          <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="text-sm text-white/70">Route risk snapshot</p>
+              <p className="text-lg font-semibold">
+                {routeIssueCounts.total} issue(s) on route
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2 text-xs">
+              <span className="rounded-full bg-red-500/15 px-3 py-1 text-red-200">
+                High {routeIssueCounts.high}
+              </span>
+              <span className="rounded-full bg-amber-400/15 px-3 py-1 text-amber-100">
+                Medium {routeIssueCounts.medium}
+              </span>
+              <span className="rounded-full bg-emerald-500/15 px-3 py-1 text-emerald-100">
+                Low {routeIssueCounts.low}
+              </span>
+            </div>
+          </div>
+          <p className="mt-2 text-xs text-white/60">
+            Use the highlighted route overlay to avoid the most dangerous segments.
+          </p>
         </div>
       )}
 
