@@ -1,7 +1,16 @@
 import axios from "axios";
 
+const getBaseURL = () => {
+  let url = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+  // If the user configured an API URL (e.g. localhost:5000) but forgot the /api suffix, append it automatically
+  if (url && !url.endsWith("/api") && !url.endsWith("/api/")) {
+    url = url.endsWith("/") ? `${url}api` : `${url}/api`;
+  }
+  return url;
+};
+
 const API = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api",
+  baseURL: getBaseURL(),
   withCredentials: true,
   timeout: 15000,
 });
