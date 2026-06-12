@@ -38,7 +38,7 @@ const connectDB = async () => {
     console.log("✅ MongoDB Connected");
   } catch (error) {
     console.error("🔥 DB Connection Error:", error.message);
-    process.exit(1);
+    // Do not call process.exit(1) so that the Render service can bind to its port and stay online
   }
 };
 
@@ -46,8 +46,20 @@ const connectDB = async () => {
    ✅ MIDDLEWARE & SECURITY
 ===================================== */
 app.use(helmet());
+const allowedOrigins = ["http://localhost:3000", "http://127.0.0.1:3000"];
+if (process.env.FRONTEND_URL) {
+  allowedOrigins.push(process.env.FRONTEND_URL);
+}
+
 app.use(cors({
-  origin: ["http://localhost:3000", "http://127.0.0.1:3000"],
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin) || origin.endsWith(".vercel.app")) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   credentials: true
 }));
 app.use(compression());
@@ -209,12 +221,12 @@ cron.schedule("0 * * * *", async () => {
 ===================================== */
 const PORT = process.env.PORT || 5000;
 
-const startServer = async () => {
-  await connectDB(); // 🔥 IMPORTANT FIX
-
+const startServer = () => {
   app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
   });
+
+  connectDB();
 };
 
 startServer();
