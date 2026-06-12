@@ -1,9 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import API from "../../utils/api";
 import Chart from "../../components/Chart";
+import dynamic from "next/dynamic";
+
+const MapComponent = dynamic(
+  () => import("../../components/MapComponent"),
+  { ssr: false }
+);
 
 type Issue = {
   _id: string;
@@ -12,11 +19,124 @@ type Issue = {
   latitude: number;
   longitude: number;
   votes: number;
+  communityConfirmations?: number;
   riskScore: string;
+  riskLevel?: string;
   riskValue?: number;
+  finalRisk?: number;
   status: string;
   locationName?: string;
   createdAt?: string;
+  resolvedAt?: string;
+  slaDeadline?: string;
+  slaStatus?: string;
+};
+
+// 🌟 REALISTIC DELHI NCR SEEDED DATASET FOR DEMO MODE FALLBACK
+const MOCK_DEMO_ISSUES: Issue[] = [
+  {
+    _id: "demo-1",
+    imageUrl: "",
+    issueType: "sewer",
+    latitude: 28.5921,
+    longitude: 77.0460,
+    votes: 21,
+    communityConfirmations: 8,
+    riskScore: "Critical",
+    riskLevel: "Critical",
+    riskValue: 96,
+    finalRisk: 96,
+    status: "pending",
+    locationName: "Dwarka",
+    createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+    slaDeadline: new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString(),
+    slaStatus: "Warning",
+  },
+  {
+    _id: "demo-2",
+    imageUrl: "",
+    issueType: "pothole",
+    latitude: 28.5244,
+    longitude: 77.1933,
+    votes: 14,
+    communityConfirmations: 5,
+    riskScore: "High",
+    riskLevel: "High",
+    riskValue: 84,
+    finalRisk: 84,
+    status: "in-progress",
+    locationName: "Saket",
+    createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+    slaDeadline: new Date(Date.now() + 36 * 60 * 60 * 1000).toISOString(),
+    slaStatus: "OK",
+  },
+  {
+    _id: "demo-3",
+    imageUrl: "",
+    issueType: "garbage",
+    latitude: 28.5168,
+    longitude: 77.1998,
+    votes: 8,
+    communityConfirmations: 2,
+    riskScore: "Medium",
+    riskLevel: "Medium",
+    riskValue: 58,
+    finalRisk: 58,
+    status: "pending",
+    locationName: "Vasant Kunj",
+    createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+    slaDeadline: new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString(),
+    slaStatus: "OK",
+  },
+  {
+    _id: "demo-4",
+    imageUrl: "",
+    issueType: "construction",
+    latitude: 28.6505,
+    longitude: 77.2028,
+    votes: 19,
+    communityConfirmations: 6,
+    riskScore: "High",
+    riskLevel: "High",
+    riskValue: 88,
+    finalRisk: 88,
+    status: "in-progress",
+    locationName: "Karol Bagh",
+    createdAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+    slaDeadline: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+    slaStatus: "Warning",
+  },
+  {
+    _id: "demo-5",
+    imageUrl: "",
+    issueType: "sewer",
+    latitude: 28.6328,
+    longitude: 77.1896,
+    votes: 27,
+    communityConfirmations: 12,
+    riskScore: "Critical",
+    riskLevel: "Critical",
+    riskValue: 98,
+    finalRisk: 98,
+    status: "pending",
+    locationName: "Connaught Place",
+    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    slaDeadline: new Date(Date.now() + 18 * 60 * 60 * 1000).toISOString(),
+    slaStatus: "Warning",
+  }
+];
+
+const MOCK_DEMO_TOP_AREAS = [
+  { _id: "Connaught Place", totalIssues: 12, criticalIssues: 5, escalations: 2, cri: 98, trend: "↑ 12%", severityScore: 88, densityScore: 92, criticalIssueScore: 85 },
+  { _id: "Dwarka", totalIssues: 18, criticalIssues: 6, escalations: 1, cri: 96, trend: "↑ 8%", severityScore: 84, densityScore: 88, criticalIssueScore: 78 },
+  { _id: "Karol Bagh", totalIssues: 15, criticalIssues: 4, escalations: 1, cri: 88, trend: "↑ 2%", severityScore: 78, densityScore: 82, criticalIssueScore: 74 },
+  { _id: "Saket", totalIssues: 24, criticalIssues: 8, escalations: 2, cri: 84, trend: "↓ 4%", severityScore: 72, densityScore: 75, criticalIssueScore: 70 },
+  { _id: "Vasant Kunj", totalIssues: 8, criticalIssues: 1, escalations: 0, cri: 58, trend: "↓ 6%", severityScore: 52, densityScore: 48, criticalIssueScore: 35 }
+];
+
+const MOCK_DEMO_STATS = {
+  summary: { criScore: 84 },
+  platformHealth: { escalations: 6 }
 };
 
 export default function Dashboard() {
@@ -25,472 +145,700 @@ export default function Dashboard() {
   const [topAreas, setTopAreas] = useState<any[]>([]);
   const [loadingAreas, setLoadingAreas] = useState(true);
   const [stats, setStats] = useState<any>(null);
-  const [userLocation, setUserLocation] = useState<{
-    latitude: number;
-    longitude: number;
-  } | null>(null);
-  const [locationChecked, setLocationChecked] = useState(false);
-  const nearbyRadiusKm = 3;
+  const [weather, setWeather] = useState("clear");
+  const [isAnimating, setIsAnimating] = useState(false);
 
-  const getRiskTone = (riskScore?: string) => {
-    if (riskScore === "Critical" || riskScore === "High") {
-      return {
-        label: "Critical",
-        dot: "bg-red-500",
-        badge: "bg-red-500/15 text-red-200 border-red-400/30",
+  // 🛡️ DATA MODE CHECK
+  const [isDemo, setIsDemo] = useState(true);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const mode = localStorage.getItem("demoMode");
+      // If not explicitly disabled ("false"), default to Demo Mode to preserve mock telemetry
+      setIsDemo(mode !== "false");
+    }
+  }, []);
+
+  const [simState, setSimState] = useState<{
+    active: boolean;
+    weather: string;
+    cri: number;
+    reports: number;
+    critical: number;
+    alert: string;
+    recommendation: string;
+  }>({
+    active: false,
+    weather: "clear",
+    cri: 0,
+    reports: 0,
+    critical: 0,
+    alert: "",
+    recommendation: ""
+  });
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const handleSimEvent = () => {
+        const active = localStorage.getItem("sim_active") === "true";
+        if (active) {
+          const simWeather = localStorage.getItem("sim_weather") || "clear";
+          setWeather(simWeather);
+          setSimState({
+            active: true,
+            weather: simWeather,
+            cri: parseInt(localStorage.getItem("sim_cri") || "0", 10),
+            reports: parseInt(localStorage.getItem("sim_reports") || "0", 10),
+            critical: parseInt(localStorage.getItem("sim_critical") || "0", 10),
+            alert: localStorage.getItem("sim_alert") || "",
+            recommendation: localStorage.getItem("sim_recommendation") || ""
+          });
+        } else {
+          setSimState({
+            active: false,
+            weather: "clear",
+            cri: 0,
+            reports: 0,
+            critical: 0,
+            alert: "",
+            recommendation: ""
+          });
+        }
       };
+
+      handleSimEvent();
+      window.addEventListener("civicguard-simulation", handleSimEvent);
+      return () => window.removeEventListener("civicguard-simulation", handleSimEvent);
     }
+  }, []);
 
-    if (riskScore === "Medium") {
-      return {
-        label: "Medium",
-        dot: "bg-yellow-400",
-        badge: "bg-yellow-400/15 text-yellow-100 border-yellow-300/30",
-      };
-    }
+  useEffect(() => {
+    setIsAnimating(true);
+    const timer = setTimeout(() => {
+      setIsAnimating(false);
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [weather]);
 
-    return {
-      label: "Low",
-      dot: "bg-green-500",
-      badge: "bg-green-500/15 text-green-200 border-green-400/30",
-    };
-  };
-
-  const getApiOrigin = () => {
-    const baseURL = API.defaults.baseURL || "";
-
-    try {
-      return new URL(baseURL).origin;
-    } catch {
-      return "";
-    }
-  };
-
-  const getIssueImageSrc = (imageUrl?: string) => {
-    if (!imageUrl) return "/favicon.ico";
-
-    const apiOrigin = getApiOrigin();
-
-    if (imageUrl.startsWith("/")) {
-      return apiOrigin ? `${apiOrigin}${imageUrl}` : imageUrl;
-    }
-
-    try {
-      const parsedUrl = new URL(imageUrl);
-
-      if (
-        parsedUrl.pathname.startsWith("/uploads/") &&
-        apiOrigin &&
-        parsedUrl.origin !== apiOrigin
-      ) {
-        return `${apiOrigin}${parsedUrl.pathname}`;
-      }
-
-      return imageUrl;
-    } catch {
-      return imageUrl;
-    }
-  };
-
-  const handleIssueClick = (issue: Issue) => {
-    localStorage.setItem("selectedIssue", JSON.stringify(issue));
-    router.push("/driver");
-  };
-
-  const hasValidCoords = (issue: Issue) =>
-    Number.isFinite(Number(issue.latitude)) &&
-    Number.isFinite(Number(issue.longitude));
-
-  const getDistanceKm = (
-    lat1: number,
-    lon1: number,
-    lat2: number,
-    lon2: number
-  ) => {
-    const toRad = (value: number) => (value * Math.PI) / 180;
-    const earthRadiusKm = 6371;
-    const dLat = toRad(lat2 - lat1);
-    const dLon = toRad(lon2 - lon1);
-    const a =
-      Math.sin(dLat / 2) ** 2 +
-      Math.cos(toRad(lat1)) *
-        Math.cos(toRad(lat2)) *
-        Math.sin(dLon / 2) ** 2;
-
-    return earthRadiusKm * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  };
-
+  // Fetch Issues from DB
   useEffect(() => {
     const fetchIssues = async () => {
       try {
-        const res = await API.get("/issues");
+        const res = await API.get(`/issues?weather=${weather}`);
+        let data = res.data;
+        
+        // Demo Mode fallback if DB is empty
+        if (isDemo && (!data || data.length === 0)) {
+          data = MOCK_DEMO_ISSUES;
+        }
 
-        const sorted = res.data.sort(
+        const sorted = data.sort(
           (a: any, b: any) =>
             new Date(b.createdAt || 0).getTime() -
             new Date(a.createdAt || 0).getTime()
         );
-
         setIssues(sorted);
       } catch (err) {
         console.error(err);
+        if (isDemo) {
+          setIssues(MOCK_DEMO_ISSUES);
+        } else {
+          setIssues([]);
+        }
       }
     };
-
     fetchIssues();
-  }, []);
+  }, [weather, isDemo]);
 
+  // Fetch Top Areas & Homepage Stats
   useEffect(() => {
     const fetchTopAreas = async () => {
       try {
         const [areasRes, statsRes] = await Promise.all([
-          API.get("/issues/top-areas"),
-          API.get("/issues/stats"),
+          API.get(`/issues/top-areas?weather=${weather}`),
+          API.get(`/issues/homepage-stats?weather=${weather}`),
         ]);
-
-        const cleaned = areasRes.data.filter(
+        
+        let cleaned = areasRes.data.filter(
           (a: any) => a._id && a._id !== "Unknown"
         );
+        let statData = statsRes.data;
+
+        // Demo Mode fallback if DB is empty
+        if (isDemo && (cleaned.length === 0 || !statData)) {
+          cleaned = MOCK_DEMO_TOP_AREAS;
+          statData = MOCK_DEMO_STATS;
+        }
 
         setTopAreas(cleaned);
-        setStats(statsRes.data);
+        setStats(statData);
       } catch (err) {
         console.error(err);
+        if (isDemo) {
+          setTopAreas(MOCK_DEMO_TOP_AREAS);
+          setStats(MOCK_DEMO_STATS);
+        } else {
+          setTopAreas([]);
+          setStats(null);
+        }
       } finally {
         setLoadingAreas(false);
       }
     };
-
     fetchTopAreas();
-  }, []);
+  }, [weather, isDemo]);
 
-  useEffect(() => {
-    if (!navigator.geolocation) {
-      setLocationChecked(true);
-      return;
-    }
+  // Compute strict data mode parameters
+  const isEmptyMode = issues.length === 0 && !isDemo;
+  const dataModeLabel = isEmptyMode
+    ? "⚪ No Operational Data"
+    : isDemo
+    ? "🟣 Demo Dataset Active"
+    : "🟢 Live Operational Data";
+  const dataModeColor = isEmptyMode
+    ? "bg-slate-500/10 border-slate-500/20 text-slate-400"
+    : isDemo
+    ? "bg-purple-500/10 border-purple-500/20 text-purple-400 animate-pulse"
+    : "bg-emerald-500/10 border-emerald-500/20 text-emerald-400";
 
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setUserLocation({
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-        });
-        setLocationChecked(true);
-      },
-      () => {
-        setLocationChecked(true);
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 300000,
+  // Dynamic Metrics Binding (No fallback defaults if Empty Mode)
+  const activeCount = simState.active 
+    ? simState.reports 
+    : issues.filter((i) => !["resolved", "invalid"].includes(i.status)).length;
+  
+  const criticalCount = simState.active 
+    ? simState.critical 
+    : issues.filter((i) => i.riskScore === "Critical" && !["resolved", "invalid"].includes(i.status)).length;
+  
+  const resolvedCount = issues.filter((i) => i.status === "resolved").length;
+  
+  const escalationsCount = simState.active 
+    ? (simState.cri >= 89 ? 1 : 0) 
+    : (stats?.platformHealth?.escalations ?? 0);
+  
+  const activeIssuesList = issues.filter((i: any) => !["resolved", "invalid"].includes(i.status));
+  const calculatedCRI = activeIssuesList.length > 0
+    ? Math.round(activeIssuesList.reduce((sum: number, i: any) => sum + (i.finalRisk || i.riskValue || 0), 0) / activeIssuesList.length)
+    : 0;
+
+  const cityCRI = simState.active 
+    ? simState.cri 
+    : (stats?.summary?.criScore ?? calculatedCRI);
+
+  const highestCriaArea = topAreas.length > 0 ? topAreas[0]._id : "None";
+  const potentialReduction = cityCRI > 0 ? Math.round(cityCRI * 0.18) : 0;
+
+  // SLA Watchlist logic (impending deadlines, max 5)
+  const getSlaRiskWatchlist = () => {
+    const active = issues.filter(i => !["resolved", "invalid"].includes(i.status) && i.slaDeadline);
+    const sorted = [...active].sort((a, b) => new Date(a.slaDeadline || 0).getTime() - new Date(b.slaDeadline || 0).getTime());
+    return sorted.slice(0, 5).map(issue => {
+      const hrs = Math.max(1, Math.round((new Date(issue.slaDeadline || 0).getTime() - Date.now()) / (1000 * 60 * 60)));
+      const prob = issue.slaStatus === "Breached" ? 100 : issue.slaStatus === "Warning" ? 82 : 45;
+      
+      const explanation = `SLA status is ${issue.slaStatus} with ${hrs} hours remaining because of high frequency of civic reports nearby and no dispatch unit assigned yet.`;
+      
+      return {
+        issue: `${issue.riskScore || "Critical"} ${issue.issueType.charAt(0).toUpperCase() + issue.issueType.slice(1)}`,
+        location: issue.locationName || "NCR",
+        hoursRemaining: hrs,
+        probability: prob,
+        explanation
+      };
+    });
+  };
+  const slaRiskWatchlist = getSlaRiskWatchlist();
+
+  // Emergency Mode state check
+  const showEmergencyMode = cityCRI >= 75 || escalationsCount > 0 || (slaRiskWatchlist && slaRiskWatchlist.some(w => w.probability >= 80));
+
+  // Today's Action Plan (top 3 recommended actions today formatted cleanly with dynamic explainability)
+  const getRecommendedActions = () => {
+    const active = issues.filter(i => !["resolved", "invalid"].includes(i.status));
+    const sorted = [...active].sort((a, b) => (b.finalRisk || b.riskValue || 0) - (a.finalRisk || a.riskValue || 0));
+    return sorted.slice(0, 3).map((issue) => {
+      const reduction = Math.max(4, Math.round((issue.finalRisk || issue.riskValue || 80) * 0.1));
+      
+      let actionTitle = `Resolve Sewer Blockage – ${issue.locationName}`;
+      if (issue.issueType === "pothole") {
+        actionTitle = `Repair Pothole Cluster – ${issue.locationName}`;
+      } else if (issue.issueType === "garbage") {
+        actionTitle = `Clear Garbage Hotspot – ${issue.locationName}`;
+      } else if (issue.issueType === "construction") {
+        actionTitle = `Secure Construction Hazard – ${issue.locationName}`;
+      } else {
+        const formattedType = issue.issueType.charAt(0).toUpperCase() + issue.issueType.slice(1).replace("_", " ");
+        actionTitle = `Resolve ${formattedType} – ${issue.locationName}`;
       }
+
+      // Calculate days unresolved
+      const createdDate = issue.createdAt ? new Date(issue.createdAt) : new Date();
+      const daysUnresolved = Math.max(1, Math.round((Date.now() - createdDate.getTime()) / (1000 * 60 * 60 * 24)));
+      const confirmations = issue.communityConfirmations || 0;
+      const votesCount = issue.votes || 0;
+
+      const priority = issue.riskScore || "Critical";
+      const why = `${confirmations + votesCount} unresolved report validations, outstanding for ${daysUnresolved} days.`;
+      const expectedImpact = `CRI -${reduction}%`;
+
+      return {
+        title: actionTitle,
+        priorityScore: Math.round(issue.finalRisk || issue.riskValue || 80),
+        reduction,
+        priority,
+        why,
+        expectedImpact
+      };
+    });
+  };
+  const recommendedActions = getRecommendedActions();
+
+  // Municipal Impact Dashboard calculations (Dynamic)
+  const resolvedIssues = useMemo(() => issues.filter(i => i.status === "resolved"), [issues]);
+  
+  const criticalRisksPrevented = useMemo(() => {
+    return resolvedIssues.filter(i => 
+      i.riskScore === "Critical" || 
+      i.riskLevel === "Critical" || 
+      (i.riskValue !== undefined && i.riskValue >= 80)
+    ).length;
+  }, [resolvedIssues]);
+
+  const potentialSlaBreachesAvoided = useMemo(() => {
+    return resolvedIssues.filter(i => {
+      if (i.slaStatus === "Warning" || i.slaStatus === "Breached") return true;
+      if (!i.slaDeadline || !i.createdAt) return false;
+      const totalSlaMs = new Date(i.slaDeadline).getTime() - new Date(i.createdAt).getTime();
+      const remainingAtResolution = new Date(i.slaDeadline).getTime() - (i.resolvedAt ? new Date(i.resolvedAt).getTime() : Date.now());
+      return totalSlaMs > 0 && remainingAtResolution > 0 && (remainingAtResolution / totalSlaMs) <= 0.25;
+    }).length;
+  }, [resolvedIssues]);
+
+  const estimatedCitizensImpacted = useMemo(() => {
+    if (issues.length === 0) return 0;
+    return (activeCount * 150) + (resolvedCount * 50);
+  }, [activeCount, resolvedCount, issues]);
+
+  const riskReductionAchieved = useMemo(() => {
+    if (resolvedCount === 0 || cityCRI === 0) return { percentage: 0 };
+    const averageResolvedImpact = resolvedIssues.length > 0 
+      ? Math.round(resolvedIssues.reduce((sum, i) => sum + (i.finalRisk || i.riskValue || 45), 0) / resolvedIssues.length)
+      : 45;
+    const previousCRI = cityCRI + Math.round((resolvedCount * averageResolvedImpact * 0.15));
+    const pointReduction = Math.max(0, previousCRI - cityCRI);
+    const pctReduction = previousCRI > 0 ? Math.round((pointReduction / previousCRI) * 100) : 0;
+    return {
+      percentage: pctReduction
+    };
+  }, [resolvedIssues, resolvedCount, cityCRI]);
+
+  const renderEmptyState = (message: string = "No Operational Data Available") => {
+    return (
+      <div className="flex flex-col items-center justify-center text-center p-6 bg-[#0B1220] border border-[#6366F1]/15 rounded-xl w-full my-2">
+        <span className="text-xl mb-1.5">🛡️</span>
+        <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider">{message}</h4>
+        <p className="text-[10px] text-slate-400 mt-1">Submit reports or activate demo dataset to populate analytics.</p>
+      </div>
     );
-  }, []);
-
-  const total = issues.length;
-  const high = issues.filter(
-    (i) => i.riskScore === "Critical" || i.riskScore === "High"
-  ).length;
-  const resolved = issues.filter((i) => i.status === "resolved").length;
-  const inProgress = issues.filter((i) => i.status === "in-progress").length;
-
-  const today = issues.filter((i) => {
-    if (!i.createdAt) return false;
-    return new Date(i.createdAt).toDateString() === new Date().toDateString();
-  }).length;
-
-  const nearbyIssues = userLocation
-    ? issues
-        .filter(
-          (issue) =>
-            hasValidCoords(issue) &&
-            ["pending", "in-progress"].includes(issue.status) &&
-            getDistanceKm(
-              userLocation.latitude,
-              userLocation.longitude,
-              Number(issue.latitude),
-              Number(issue.longitude)
-            ) <= nearbyRadiusKm
-        )
-        .sort(
-          (a, b) =>
-            getDistanceKm(
-              userLocation.latitude,
-              userLocation.longitude,
-              Number(a.latitude),
-              Number(a.longitude)
-            ) -
-            getDistanceKm(
-              userLocation.latitude,
-              userLocation.longitude,
-              Number(b.latitude),
-              Number(b.longitude)
-            )
-        )
-        .slice(0, 6)
-    : [];
-
-  const topCriticalIssues = [...issues]
-    .filter((issue) => issue.riskScore === "Critical" || issue.riskScore === "High")
-    .sort((a, b) => {
-      const riskDiff = Number(b.riskValue || 0) - Number(a.riskValue || 0);
-      if (riskDiff !== 0) return riskDiff;
-      return Number(b.votes || 0) - Number(a.votes || 0);
-    })
-    .slice(0, 3);
+  };
 
   return (
-    <div className="h-full overflow-y-auto bg-gradient-to-br from-indigo-500 to-purple-500/10 p-4 md:p-6">
-      <h1 className="text-xl md:text-3xl font-bold text-white mb-4 md:mb-6">
-        Dashboard Overview
-      </h1>
-
-      <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-4 md:p-6 space-y-6 md:space-y-8 shadow-2xl">
-        {stats && (
-          <div className="grid gap-3 md:grid-cols-3 mb-3">
-            <div className="rounded-2xl bg-slate-900/80 p-4 text-white">
-              <p className="text-xs uppercase text-slate-400">Backend Active Issues</p>
-              <p className="mt-2 text-2xl font-semibold">{stats.active}</p>
+    <div className="min-h-full overflow-x-hidden bg-[#050816] p-4 md:p-6 text-slate-100 font-sans">
+      <div className="max-w-7xl mx-auto space-y-6">
+        
+        {/* Header Title Section */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="space-y-1">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+              <h1 className="text-xl md:text-3xl font-extrabold text-white tracking-tight">
+                City Operations Dashboard
+              </h1>
+              <span className={`px-2.5 py-1 border rounded-full text-[10px] font-black uppercase tracking-wider self-start ${dataModeColor}`}>
+                {dataModeLabel}
+              </span>
             </div>
-            <div className="rounded-2xl bg-slate-900/80 p-4 text-white">
-              <p className="text-xs uppercase text-slate-400">Backend Total Issues</p>
-              <p className="mt-2 text-2xl font-semibold">{stats.total}</p>
-            </div>
-            <div className="rounded-2xl bg-slate-900/80 p-4 text-white">
-              <p className="text-xs uppercase text-slate-400">Most common risk</p>
-              <p className="mt-2 text-2xl font-semibold">
-                {stats.riskBreakdown?.sort((a: any, b: any) => b.count - a.count)[0]?._id || "None"}
-              </p>
-            </div>
+            <p className="text-xs text-slate-400 mt-1">
+              Real-time municipal risk and citywide operational health overview.
+            </p>
           </div>
-        )}
-
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 md:gap-4">
-          <StatCard title="Today" value={today} />
-          <StatCard title="Critical Risk" value={high} tone="critical" />
-          <StatCard title="Resolved" value={resolved} />
-          <StatCard title="In Progress" value={inProgress} />
-          <StatCard title="Total" value={total} />
+          
+          <div className="bg-[#0B1220] border border-[#6366F1]/15 rounded-2xl px-4 py-2 backdrop-blur-md text-xs font-bold text-slate-300 flex items-center gap-2 self-start sm:self-auto shadow-md">
+            <span className="text-slate-400 uppercase tracking-wider text-[10px]">Weather Simulation:</span>
+            <select
+              value={weather}
+              onChange={(e) => setWeather(e.target.value)}
+              className="bg-[#050816] text-white border border-[#6366F1]/30 rounded px-2 py-0.5 outline-none cursor-pointer focus:border-[#7C3AED] transition-colors font-bold"
+            >
+              <option value="clear">☀️ Clear</option>
+              <option value="rain">🌧️ Heavy Rain</option>
+              <option value="heat">🔥 Extreme Heat</option>
+            </select>
+          </div>
         </div>
 
-        {topAreas.length > 0 && (
-          <div className="bg-red-500/10 border border-red-500/20 text-red-300 px-3 md:px-4 py-2 rounded-xl text-xs md:text-sm">
-            Critical risk concentration in {topAreas[0]._id}
-          </div>
-        )}
-
-        <div className="bg-gradient-to-r from-amber-500/15 to-red-500/10 border border-amber-400/20 rounded-2xl p-4 md:p-6">
-          <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-            <div>
-              <h2 className="text-white font-semibold text-sm md:text-lg">
-                How Risk Score Works
-              </h2>
-              <p className="mt-1 text-xs md:text-sm text-white/70">
-                CivicGuard converts civic complaints into an explainable risk score instead of only listing reports.
+        {/* 🚨 COMPACT EMERGENCY MODE ALERT BANNER */}
+        {showEmergencyMode && issues.length > 0 && (
+          <div className="relative overflow-hidden bg-gradient-to-r from-red-950/85 via-[#3F0A10]/70 to-red-950/85 border border-[#EF4444]/40 rounded-2xl p-4 shadow-[0_0_20px_rgba(239,68,68,0.15)] flex flex-col sm:flex-row sm:items-center justify-between gap-4 z-20 animate-pulse">
+            <div className="space-y-1">
+              <h3 className="text-rose-400 font-black text-sm uppercase tracking-wider flex items-center gap-2">
+                <span>🚨</span> Critical Infrastructure Risk Detected in {highestCriaArea}
+              </h3>
+              <p className="text-[11px] text-red-200/80 font-medium">
+                {criticalCount} active critical reports • {escalationsCount} active escalations
               </p>
             </div>
-            <div className="rounded-xl bg-black/20 px-3 py-2 text-xs md:text-sm text-amber-200 border border-white/10">
-              Risk Score = Severity + Frequency + Location Priority
-            </div>
-          </div>
-
-          <div className="mt-4 grid gap-3 md:grid-cols-3">
-            <div className="rounded-xl bg-white/5 p-3 border border-white/10">
-              <p className="text-white text-sm font-medium">Severity</p>
-              <p className="mt-1 text-xs text-white/65">
-                Based on issue type like pothole, sewer, garbage, or construction.
-              </p>
-            </div>
-            <div className="rounded-xl bg-white/5 p-3 border border-white/10">
-              <p className="text-white text-sm font-medium">Frequency</p>
-              <p className="mt-1 text-xs text-white/65">
-                Increased by community votes and repeated reporting confidence.
-              </p>
-            </div>
-            <div className="rounded-xl bg-white/5 p-3 border border-white/10">
-              <p className="text-white text-sm font-medium">Location Priority</p>
-              <p className="mt-1 text-xs text-white/65">
-                Increased when more active civic issues exist nearby in the same area.
-              </p>
-            </div>
-          </div>
-
-          <p className="mt-4 text-xs md:text-sm text-white/70">
-            Weighted model: <span className="text-white font-medium">Severity × 0.5 + Frequency × 0.3 + Location Priority × 0.2</span>
-          </p>
-        </div>
-
-        <div className="bg-gradient-to-r from-red-500/15 to-orange-500/10 border border-red-400/20 rounded-2xl p-4 md:p-6">
-          <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
-            <div>
-              <h2 className="text-white font-semibold text-sm md:text-lg">
-                Top 3 Critical Issues
-              </h2>
-              <p className="mt-1 text-xs md:text-sm text-white/70">
-                Helps authorities decide what to fix first by highlighting the most urgent civic risks.
-              </p>
-            </div>
-            <div className="rounded-xl bg-red-500/10 px-3 py-2 text-xs md:text-sm text-red-200 border border-red-400/20">
-              Prioritized using risk score + community signal
-            </div>
-          </div>
-
-          <div className="mt-4 space-y-3">
-            {topCriticalIssues.length === 0 ? (
-              <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/60">
-                No critical issues available right now.
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-6 text-xs bg-black/45 border border-red-500/10 p-3 rounded-xl">
+              <div>
+                <span className="text-red-300 font-bold uppercase tracking-wider text-[9px] block">Recommended Action:</span>
+                <span className="text-white font-extrabold">{weather === "rain" ? "Immediate drainage intervention" : weather === "heat" ? "Immediate sanitation dispatch" : "Immediate repair dispatches"}</span>
               </div>
-            ) : (
-              topCriticalIssues.map((issue, index) => (
-                <div
-                  key={issue._id}
-                  onClick={() => handleIssueClick(issue)}
-                  className="flex cursor-pointer flex-col gap-3 rounded-xl border border-white/10 bg-white/5 p-4 transition hover:bg-white/10 md:flex-row md:items-center md:justify-between"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-500/20 text-sm font-semibold text-red-200">
-                      {index + 1}
-                    </div>
-                    <div>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <p className="text-sm font-medium capitalize text-white md:text-base">
-                          {issue.issueType}
-                        </p>
-                        <span className="inline-flex items-center gap-1 rounded-full border border-red-400/30 bg-red-500/15 px-2 py-0.5 text-[11px] text-red-200 md:text-xs">
-                          <span className="h-2 w-2 rounded-full bg-red-500"></span>
-                          {(issue.riskScore === "High" ? "Critical" : issue.riskScore)} Risk
-                        </span>
-                      </div>
-                      <p className="text-xs text-white/70">
-                        {issue.locationName && issue.locationName !== "Unknown"
-                          ? issue.locationName
-                          : "Location unavailable"}
-                      </p>
-                    </div>
-                  </div>
+              <div className="sm:border-l sm:border-red-500/20 sm:pl-6">
+                <span className="text-red-300 font-bold uppercase tracking-wider text-[9px] block">Expected Reduction:</span>
+                <span className="text-emerald-400 font-black text-sm">15%</span>
+              </div>
+            </div>
+          </div>
+        )}
 
-                  <div className="flex items-center gap-3 text-xs md:text-sm">
-                    {Number(issue.riskValue) > 0 && (
-                      <span className="rounded-lg bg-black/20 px-3 py-1.5 text-white/80">
-                        Risk {Math.round(Number(issue.riskValue))}
+        {/* 📊 KPI SUMMARY LAYER */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <StatCard title="City Risk Index" value={cityCRI} subtitle={cityCRI >= 75 ? "🔴 Critical" : cityCRI >= 50 ? "🟠 Elevated" : "🟢 Stable"} isAnimating={isAnimating} />
+          <StatCard title="Critical Issues" value={criticalCount} subtitle="Immediate attention required" isAnimating={isAnimating} />
+          <StatCard title="SLA Risk (Impending)" value={slaRiskWatchlist.length} subtitle="Deadline within 48 hours" isAnimating={isAnimating} />
+        </div>
+
+        {/* =========================================================
+            ⚡ SECTION 1: EXECUTIVE HIGHEST RISK ZONE & MITIGATION
+           ========================================================= */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          
+          {/* Municipal Risk Radar (col-span-7) */}
+          <div className="lg:col-span-7 bg-[#0B1220] border border-[#6366F1]/20 rounded-2xl p-5 shadow-2xl flex flex-col justify-between">
+            <div className="border-b border-[#6366F1]/15 pb-3 flex justify-between items-center">
+              <div>
+                <h2 className="text-[#7C3AED] font-black text-sm uppercase tracking-wider flex items-center gap-2">
+                  <span>📡</span> Municipal Risk Radar
+                </h2>
+                <p className="text-[10px] text-slate-400 mt-0.5">Highest Risk Zone</p>
+              </div>
+              <span className="px-2 py-0.5 rounded bg-[#7C3AED]/20 border border-[#7C3AED]/30 text-[#A78BFA] text-[9px] font-bold uppercase tracking-wider">
+                Centerpiece
+              </span>
+            </div>
+
+            {issues.length === 0 ? (
+              renderEmptyState("No active hotspot telemetry.")
+            ) : (
+              <div className="bg-[#050816]/80 border border-indigo-500/30 rounded-2xl p-5 flex flex-col gap-4 relative overflow-hidden shadow-2xl mt-4">
+                <div className="absolute top-[-20%] right-[-20%] w-[50%] h-[50%] bg-indigo-500/20 rounded-full blur-[80px] pointer-events-none" />
+                
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <span className="px-2.5 py-0.5 rounded bg-red-500/10 border border-red-500/20 text-red-400 text-[10px] font-black uppercase tracking-wider animate-pulse">
+                      🚨 Highest Risk Area
+                    </span>
+                    {simState.active && (
+                      <span className="px-2.5 py-0.5 rounded bg-purple-500/10 border border-purple-500/20 text-purple-400 text-[10px] font-black uppercase tracking-wider animate-pulse">
+                        Simulation Active
                       </span>
                     )}
-                    <span className="rounded-lg bg-white/10 px-3 py-1.5 text-white/80">
-                      {issue.votes} votes
-                    </span>
                   </div>
+
+                  <div className="space-y-1">
+                    <span className="text-xs text-slate-400 font-bold uppercase tracking-wider block">Hotspot Sector</span>
+                    <h3 className="text-xl font-black text-white tracking-tight">
+                      {simState.active && simState.cri >= 89 ? "Dwarka Sector 5" : (topAreas[0]?._id || "Saket")}
+                    </h3>
+                  </div>
+
+                  <p className="text-[11px] text-slate-300 leading-relaxed font-medium">
+                    {simState.active && simState.alert
+                      ? simState.alert
+                      : "This zone exhibits the highest concentration of active infrastructure damage, high-severity reports, and citizen confirmations."}
+                  </p>
                 </div>
-              ))
+
+                <div className="flex items-center justify-between bg-slate-950/40 border border-white/5 rounded-2xl p-4 shadow-inner relative z-10">
+                  <div className="text-left">
+                    <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mb-1">Sector CRI Score</span>
+                    <div className="relative flex items-center justify-start my-1">
+                      <div className="text-3xl font-black text-red-400 drop-shadow-[0_0_15px_rgba(239,68,68,0.4)]">
+                        {simState.active ? simState.cri : (topAreas[0]?.cri || 0)}
+                      </div>
+                    </div>
+                    <span className="text-[9px] text-rose-400 font-bold">Critical Threat Level</span>
+                  </div>
+
+                  {topAreas[0] && (
+                    <div className="text-[9px] text-right space-y-0.5 text-slate-400 font-semibold border-l border-white/5 pl-4">
+                      <div className="flex justify-between gap-4">
+                        <span>Severity component:</span>
+                        <span className="text-white font-bold">{Math.round(topAreas[0].severityScore || 0)}/100</span>
+                      </div>
+                      <div className="flex justify-between gap-4">
+                        <span>Density component:</span>
+                        <span className="text-white font-bold">{Math.round(topAreas[0].densityScore || 0)}/100</span>
+                      </div>
+                      <div className="flex justify-between gap-4">
+                        <span>Critical ratio:</span>
+                        <span className="text-white font-bold">{Math.round(topAreas[0].criticalIssueScore || 0)}/100</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Hotspot Impact Summary */}
+                <div className="border-t border-white/5 pt-3 space-y-1 text-[11px] text-slate-300">
+                  <p className="font-bold uppercase tracking-wider text-rose-400 text-[9px]">Hotspot Impact Summary</p>
+                  <p className="leading-relaxed">
+                    This area has <strong className="text-white">{topAreas[0]?.totalIssues ?? 0} active hazards</strong> ({topAreas[0]?.criticalIssues ?? 0} critical) causing severe spatiotemporal risk concentration.
+                  </p>
+                  <p className="pt-1 text-[#10B981] font-bold">
+                    Expected Impact: CRI -{Math.round((topAreas[0]?.cri ?? 0) * 0.18)}% if addressed.
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Municipal Risk Reduction Potential (col-span-5) */}
+          <div className="lg:col-span-5 bg-[#0B1220] border border-[#10B981]/25 rounded-2xl p-5 shadow-2xl flex flex-col justify-between h-full relative overflow-hidden">
+            <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-emerald-500/10 rounded-full blur-[40px] pointer-events-none" />
+            <div className="space-y-4">
+              <div className="border-b border-white/5 pb-3">
+                <h2 className="text-[#10B981] font-black text-sm uppercase tracking-wider flex items-center gap-2">
+                  <span>🛡️</span> Risk Reduction Potential
+                </h2>
+                <p className="text-[10px] text-slate-400 mt-0.5">Mitigation capacity overview.</p>
+              </div>
+
+              <div className="space-y-4 pt-2">
+                <div>
+                  <span className="text-[9.5px] text-slate-400 font-bold uppercase tracking-wider block">Current City CRI</span>
+                  <span className="text-3xl font-black text-white font-mono">{cityCRI}</span>
+                </div>
+
+                <div>
+                  <span className="text-[9.5px] text-slate-400 font-bold uppercase tracking-wider block">Best Intervention Target</span>
+                  <span className="text-xs font-extrabold text-indigo-300 block mt-0.5 capitalize leading-relaxed">
+                    {recommendedActions[0] ? recommendedActions[0].title.split("–")[0].trim() : "Drainage Cleanup"}
+                  </span>
+                </div>
+
+                <div>
+                  <span className="text-[9.5px] text-slate-400 font-bold uppercase tracking-wider block">Potential Mitigation</span>
+                  <span className="text-2xl font-black text-emerald-400 font-mono">
+                    -{potentialReduction}% CRI Drop
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* =========================================================
+            🗺️ SECTION 2: CITY RISK MAP CENTERPIECE
+           ========================================================= */}
+        <div className={`bg-[#0B1220] border rounded-2xl p-5 shadow-xl transition-all duration-700 ${isAnimating ? "border-indigo-500 shadow-[0_0_25px_rgba(99,102,241,0.25)]" : "border-[#6366F1]/15"}`}>
+          <div className="flex items-center justify-between border-b border-[#6366F1]/10 pb-3">
+            <div>
+              <h2 className="text-white font-extrabold text-sm md:text-lg flex items-center gap-2">
+                <span>🗺️</span> City Risk Map
+              </h2>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Real-time geospatial visualization of active infrastructure and public safety hazards.
+              </p>
+            </div>
+            <div className="flex gap-4 text-[10px] font-bold uppercase tracking-wider shrink-0 bg-[#050816]/60 border border-white/5 px-3 py-1.5 rounded-xl">
+              <span className="flex items-center gap-1"><span className="text-red-500">🔴</span> High Risk (&ge;80)</span>
+              <span className="flex items-center gap-1"><span className="text-orange-500">🟠</span> Mod Risk (50-79)</span>
+              <span className="flex items-center gap-1"><span className="text-emerald-500">🟢</span> Stable (&lt;50)</span>
+            </div>
+          </div>
+          <div className="h-[400px] w-full rounded-xl overflow-hidden border border-white/5 relative z-10 mt-4 bg-[#050816]">
+            {issues.length === 0 ? (
+              <div className="h-full w-full flex items-center justify-center text-xs text-slate-500">
+                Awaiting map telemetry coordinates.
+              </div>
+            ) : (
+              <MapComponent issues={issues} areas={topAreas} weather={weather} route={null} />
             )}
           </div>
         </div>
 
-        <div className="bg-white/10 rounded-2xl p-4 md:p-6">
-          <h2 className="text-white font-semibold mb-2 text-sm md:text-lg">
-            Issues Distribution
-          </h2>
-          <Chart issues={issues} />
-        </div>
-
-        <div className="bg-white/5 backdrop-blur-xl rounded-2xl p-5 border border-white/10">
-          <h2 className="text-white text-lg font-semibold mb-4">Top Areas</h2>
-
-          {loadingAreas ? (
-            <div className="text-white/60 text-sm">Loading...</div>
-          ) : topAreas.length === 0 ? (
-            <div className="text-white/50 text-sm">No valid location data yet</div>
-          ) : (
-            <div className="flex gap-3 overflow-x-auto">
-              {topAreas.map((area: any, index: number) => (
-                <div
-                  key={index}
-                  className="min-w-[140px] px-4 py-3 rounded-xl bg-white/10 text-white text-center hover:bg-white/20 transition"
-                >
-                  {area._id}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div className="bg-white/10 rounded-2xl p-4 md:p-6">
-          <h2 className="text-white font-semibold mb-4 text-sm md:text-lg">
-            Nearby Issues Needing Verification
-          </h2>
-
-          {!locationChecked ? (
-            <div className="text-white/60 text-sm">Checking your location...</div>
-          ) : !userLocation ? (
-            <div className="text-white/50 text-sm">
-              Enable location to see nearby issues needing verification
-            </div>
-          ) : nearbyIssues.length === 0 ? (
-            <div className="text-white/50 text-sm">
-              No nearby issues need verification right now
-            </div>
-          ) : (
-            nearbyIssues.map((issue) => (
-              <div
-                key={issue._id}
-                onClick={() => handleIssueClick(issue)}
-                className="flex flex-col md:flex-row md:items-center justify-between gap-3 py-3 border-b border-white/10 cursor-pointer rounded-xl px-2 hover:bg-white/5 transition"
+        {/* =========================================================
+            ⚡ SECTION 3: TODAY'S ACTION PLAN
+           ========================================================= */}
+        <div className={`w-full bg-[#0B1220] border rounded-2xl p-5 shadow-2xl flex flex-col justify-between transition-all duration-700 ${isAnimating ? "border-indigo-500 shadow-[0_0_25px_rgba(99,102,241,0.25)]" : "border-[#6366F1]/20"}`}>
+          <div>
+            <div className="border-b border-[#6366F1]/10 pb-3 flex justify-between items-center">
+              <div>
+                <h2 className="text-white font-extrabold text-sm md:text-base flex items-center gap-2">
+                  <span>⚡</span> Today's Action Plan
+                </h2>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Top recommended interventions.
+                </p>
+              </div>
+              <button
+                onClick={() => router.push("/authority")}
+                className="px-3 py-1.5 bg-[#7C3AED] hover:bg-[#6D28D9] text-white rounded-xl text-xs font-bold transition cursor-pointer shrink-0"
               >
-                <div className="flex items-center gap-3">
-                  <img
-                    src={getIssueImageSrc(issue.imageUrl)}
-                    onError={(e) => {
-                      e.currentTarget.src = "/favicon.ico";
-                    }}
-                    className="w-10 h-10 md:w-12 md:h-12 rounded-lg object-cover"
-                    alt={issue.issueType}
-                  />
+                Dispatch
+              </button>
+            </div>
 
-                  <div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <p className="text-white text-sm md:text-base">{issue.issueType}</p>
-                      <span
-                        className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] md:text-xs ${getRiskTone(issue.riskScore).badge}`}
-                      >
-                        <span className={`h-2 w-2 rounded-full ${getRiskTone(issue.riskScore).dot}`}></span>
-                        {getRiskTone(issue.riskScore).label} Risk
+            {recommendedActions.length === 0 ? (
+              renderEmptyState("No active recommendations today.")
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                {recommendedActions.map((act, idx) => (
+                  <div key={idx} className="bg-[#050816]/60 border border-white/5 p-3.5 rounded-xl flex flex-col gap-2 transition hover:scale-[1.01] shadow-inner text-xs">
+                    <div className="flex items-center justify-between border-b border-white/5 pb-1.5 gap-2">
+                      <span className="font-bold text-white truncate">{act.title}</span>
+                      <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider shrink-0 ${
+                        act.priority === "Critical" ? "bg-red-500/10 text-red-400 border border-red-500/20" :
+                        act.priority === "High" ? "bg-orange-500/10 text-orange-400 border border-orange-500/20" :
+                        "bg-yellow-500/10 text-yellow-400 border border-yellow-500/20"
+                      }`}>
+                        Priority: {act.priority}
                       </span>
                     </div>
-                    <p className="text-xs text-white/70">
-                      Location: {issue.locationName && issue.locationName !== "Unknown"
-                        ? issue.locationName
-                        : "Location unavailable"}
-                    </p>
+                    <div className="text-[10px] space-y-1 text-slate-400 leading-normal">
+                      <div>
+                        <strong className="text-slate-300">Why:</strong> {act.why}
+                      </div>
+                      <div>
+                        <strong className="text-emerald-400">Expected Impact:</strong> {act.expectedImpact}
+                      </div>
+                    </div>
                   </div>
-                </div>
-
-                <div className="flex justify-between md:justify-end gap-4 text-sm">
-                  <span className="text-white">{issue.votes}</span>
-                  <span className="text-white/80 text-xs md:text-sm">{issue.status}</span>
-                </div>
+                ))}
               </div>
-            ))
-          )}
+            )}
+          </div>
         </div>
+
+        {/* =========================================================
+            🏙️ SECTION 4: OPERATIONAL INSIGHTS (ZONES + SLA LIST)
+           ========================================================= */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="lg:col-span-7 bg-[#0B1220] border border-[#6366F1]/15 rounded-2xl p-5 shadow-xl space-y-4">
+            <div className="flex items-center justify-between border-b border-[#6366F1]/10 pb-3">
+              <div>
+                <h2 className="text-white font-extrabold text-sm md:text-lg flex items-center gap-2">
+                  <span>🏙️</span> Top 5 Risk Zones
+                </h2>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Neighborhood risk profiles ranked by dynamic City Risk Index (CRI).
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-3.5">
+              {loadingAreas ? (
+                <div className="text-slate-400 text-sm py-8 text-center animate-pulse">Loading area telemetry...</div>
+              ) : topAreas.length === 0 ? (
+                renderEmptyState("No active neighborhood risk reports.")
+              ) : (
+                topAreas.slice(0, 5).map((area: any, index: number) => {
+                  const cri = area.cri;
+                  const colorClass = cri >= 80 ? "bg-red-500" : cri >= 50 ? "bg-orange-500" : "bg-emerald-500";
+                  const textClass = cri >= 80 ? "text-red-400" : cri >= 50 ? "text-orange-400" : "text-emerald-400";
+                  
+                  return (
+                     <div key={index} className="space-y-1">
+                       <div className="flex justify-between items-center text-xs font-semibold">
+                         <div className="flex items-center gap-2">
+                           <span className={`w-2 h-2 rounded-full ${colorClass}`} />
+                           <span className="text-white font-bold">{area._id}</span>
+                         </div>
+                         <span className={`font-mono font-bold ${textClass}`}>CRI {cri}</span>
+                       </div>
+                       <div className="w-full bg-slate-950 h-2 rounded-full overflow-hidden border border-white/5">
+                         <div className={`${colorClass} h-full rounded-full transition-all duration-500`} style={{ width: `${cri}%` }} />
+                       </div>
+                     </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+
+          <div className="lg:col-span-5 bg-[#0B1220] border border-[#6366F1]/15 rounded-2xl p-5 shadow-xl space-y-4">
+            <div className="border-b border-[#6366F1]/10 pb-3">
+              <h2 className="text-white font-extrabold text-sm md:text-lg flex items-center gap-2">
+                <span>⏱️</span> SLA Watchlist
+              </h2>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Impending ticket deadlines requiring crew dispatches.
+              </p>
+            </div>
+
+            {slaRiskWatchlist.length === 0 ? (
+              renderEmptyState("All active issues within safe margins.")
+            ) : (
+              <div className="overflow-x-auto w-full">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr className="text-slate-400 border-b border-white/5 uppercase tracking-wider font-semibold text-[9px]">
+                      <th className="py-2">Issue</th>
+                      <th className="py-2">Location</th>
+                      <th className="py-2 text-center">Remaining</th>
+                      <th className="py-2 text-right">Probability</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5 text-slate-200">
+                    {slaRiskWatchlist.map((row, index) => (
+                      <tr key={index} title={row.explanation} className="hover:bg-white/5 transition-colors cursor-help">
+                        <td className="py-2.5 font-bold text-white capitalize text-[11px]">{row.issue}</td>
+                        <td className="py-2.5 text-slate-300 text-[11px]">{row.location}</td>
+                        <td className="py-2.5 text-center font-bold text-rose-400 text-[11px]">{row.hoursRemaining} Hrs</td>
+                        <td className="py-2.5 text-right">
+                          <span className={`px-1.5 py-0.5 rounded font-bold text-[8px] ${
+                            row.probability >= 80 ? "bg-red-500/10 text-red-400 border border-red-500/20" : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                          }`}>
+                            {row.probability}%
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Section 6: Category Distribution Chart */}
+        <div className="bg-[#0B1220] border border-[#6366F1]/15 rounded-2xl p-5 shadow-xl">
+          <h2 className="text-white font-extrabold text-sm md:text-lg flex items-center gap-2 border-b border-[#6366F1]/10 pb-3">
+            <span>📊</span> Citywide Incident Category Distribution
+          </h2>
+          <div className="h-[220px] mt-4">
+            {issues.length === 0 ? (
+              <div className="h-full w-full flex items-center justify-center text-xs text-slate-500">
+                Awaiting category metrics telemetry feed.
+              </div>
+            ) : (
+              <Chart issues={issues} />
+            )}
+          </div>
+        </div>
+
       </div>
     </div>
   );
 }
 
-function StatCard({ title, value, tone = "default" }: any) {
-  const cardTone =
-    tone === "critical"
-      ? "bg-red-500/15 border border-red-400/30 shadow-[0_0_30px_rgba(239,68,68,0.15)]"
-      : "bg-white/10";
-
-  const titleTone = tone === "critical" ? "text-red-200" : "text-white/60";
-  const valueTone = tone === "critical" ? "text-red-100" : "text-white";
-
+function StatCard({ title, value, subtitle, isAnimating }: { title: string; value: any; subtitle: string; isAnimating?: boolean }) {
   return (
-    <div className={`${cardTone} p-3 md:p-5 rounded-xl text-center`}>
-      <p className={`${titleTone} text-xs md:text-sm`}>{title}</p>
-      <h2 className={`${valueTone} text-xl md:text-3xl font-bold`}>{value}</h2>
+    <div className="bg-[#0B1220] border border-[#6366F1]/15 p-5 rounded-2xl text-center flex flex-col justify-center min-h-[110px] transition-all hover:scale-[1.02] shadow-md">
+      <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">{title}</p>
+      <h2 className={`text-3xl font-black mt-1.5 transition-all duration-300 ${isAnimating ? "text-indigo-400 scale-110 drop-shadow-[0_0_15px_#6366F1]" : "text-white"}`}>
+        {value}
+      </h2>
+      <p className="text-slate-400 text-[10px] font-semibold mt-1">{subtitle}</p>
     </div>
   );
 }

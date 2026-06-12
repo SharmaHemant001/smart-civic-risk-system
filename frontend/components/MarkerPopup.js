@@ -5,26 +5,32 @@ import API from "../utils/api";
 import { useState, useEffect } from "react";
 
 export default function MarkerPopup({ issue }) {
-  if (!issue) return null;
-
   const [loading, setLoading] = useState(false);
   const [voted, setVoted] = useState(false);
   const [validated, setValidated] = useState(false);
-  const [status, setStatus] = useState(issue.status);
+  const [status, setStatus] = useState(issue?.status);
   const [validationVotes, setValidationVotes] = useState(
-    issue.validationVotes || { yes: 0, no: 0 }
+    issue?.validationVotes || { yes: 0, no: 0 }
   );
 
   useEffect(() => {
+    if (!issue) return;
     const votedIssues = JSON.parse(localStorage.getItem("votedIssues")) || [];
     const validatedIssues =
       JSON.parse(localStorage.getItem("validatedIssues")) || [];
 
-    setVoted(votedIssues.includes(issue._id));
-    setValidated(validatedIssues.includes(issue._id));
-    setStatus(issue.status);
-    setValidationVotes(issue.validationVotes || { yes: 0, no: 0 });
-  }, [issue._id, issue.status, issue.validationVotes]);
+    const isVoted = votedIssues.includes(issue._id);
+    const isValidated = validatedIssues.includes(issue._id);
+
+    setTimeout(() => {
+      setVoted(isVoted);
+      setValidated(isValidated);
+      setStatus(issue.status);
+      setValidationVotes(issue.validationVotes || { yes: 0, no: 0 });
+    }, 0);
+  }, [issue?._id, issue?.status, issue?.validationVotes]);
+
+  if (!issue) return null;
 
   const handleUpvote = async () => {
     if (loading || voted) return;

@@ -48,13 +48,9 @@ export default function Chart({ issues }: Props) {
   };
 
   return (
-    <div className="bg-white/10 backdrop-blur-xl border border-white/10 
-                    p-5 rounded-2xl shadow-xl">
-
-      
-
-      <p className="text-white/50 text-xs mb-4">
-        Breakdown of civic issues by category
+    <div className="w-full h-full flex flex-col justify-between">
+      <p className="text-slate-400 text-xs mb-4">
+        Breakdown of active civic issues by category
       </p>
 
       {/* 📊 CHART */}
@@ -76,8 +72,8 @@ export default function Chart({ issues }: Props) {
           {/* TOOLTIP */}
           <Tooltip
             contentStyle={{
-              backgroundColor: "#1f2937",
-              border: "none",
+              backgroundColor: "#0B1220",
+              border: "1px solid rgba(99,102,241,0.25)",
               borderRadius: "8px",
               color: "white",
             }}

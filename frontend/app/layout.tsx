@@ -20,8 +20,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="h-full">
-      <body className={`${inter.className} h-full overflow-hidden`}>
+    <html lang="en" className="h-full overflow-hidden">
+      <body className={`${inter.className} h-screen overflow-hidden`}>
         <LayoutClient>{children}</LayoutClient>
       </body>
     </html>

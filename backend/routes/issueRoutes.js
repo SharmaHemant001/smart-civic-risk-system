@@ -10,7 +10,15 @@ import {
   updateStatus,
   getStats,
   getTopAreas,
+  getHomepageStats,
+  deleteIssue,
+  checkDuplicateReport,
+  confirmIssue,
 } from "../controllers/issueController.js";
+
+import { validateUpload } from "../middleware/uploadMiddleware.js";
+import { protect, restrictTo } from "../middleware/authMiddleware.js";
+import { validateIssueUpload } from "../middleware/validationMiddleware.js";
 
 const router = express.Router();
 
@@ -29,7 +37,13 @@ const upload = multer({
 ========================= */
 
 // 📤 Upload Issue
-router.post("/upload", upload.single("image"), uploadIssue);
+router.post("/upload", upload.single("image"), validateUpload, validateIssueUpload, uploadIssue);
+
+// 🔍 Check Duplicate
+router.get("/check-duplicate", checkDuplicateReport);
+
+// 👍 Confirm Issue (Community Verification)
+router.post("/:id/confirm", confirmIssue);
 
 // 📥 Get All Issues
 router.get("/", getIssues);
@@ -43,12 +57,17 @@ router.post("/:id/validate", validateIssue);
 // 🚗 Update Status
 router.patch("/:id/status", updateStatus);
 
+// 🗑 Delete Issue (Soft Delete)
+router.delete("/:id", protect, restrictTo("operator", "admin"), deleteIssue);
+
+
 /* =========================
    🔥 FIX: TOP AREAS ROUTE
 ========================= */
 
 router.get("/stats", getStats);
 router.get("/top-areas", getTopAreas);
+router.get("/homepage-stats", getHomepageStats);
 
 /* =========================
    👍 UPVOTE

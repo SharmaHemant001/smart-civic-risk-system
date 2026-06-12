@@ -25,9 +25,14 @@ export const checkDuplicate = async (latitude, longitude, issueType) => {
     const lat = parseFloat(latitude);
     const lng = parseFloat(longitude);
 
-    // 🔥 Narrow DB search (performance boost)
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    // Narrow DB search: same category, created in the last 7 days, and not resolved or invalid
     const nearbyIssues = await Issue.find({
       issueType,
+      status: { $nin: ["resolved", "invalid"] },
+      createdAt: { $gte: sevenDaysAgo },
       latitude: { $gte: lat - 0.01, $lte: lat + 0.01 },
       longitude: { $gte: lng - 0.01, $lte: lng + 0.01 },
     });
@@ -44,8 +49,8 @@ export const checkDuplicate = async (latitude, longitude, issueType) => {
 
       console.log(`📏 Distance to ${issue._id}:`, distance.toFixed(2), "m");
 
-      // 🔥 Dynamic threshold (more votes → larger area)
-      const threshold = issue.votes > 5 ? 150 : 100;
+      // Strict 100 meters threshold as requested
+      const threshold = 100;
 
       if (distance <= threshold) {
         console.log("⚠️ Duplicate detected:", issue._id);
