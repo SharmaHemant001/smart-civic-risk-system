@@ -976,7 +976,7 @@ export default function UploadForm() {
           <div className="space-y-3">
             <p className="text-xs font-bold text-white">Photo Evidence (Optional)</p>
             <p className="text-[10px] text-white/40 leading-normal">
-              Future Enhancement: AI-assisted hazard categorization. No machine learning implementation required.
+              Upload a photo to support the report verification process.
             </p>
 
             <div className="space-y-2.5">

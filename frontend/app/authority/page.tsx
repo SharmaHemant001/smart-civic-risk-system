@@ -547,7 +547,7 @@ export default function AuthorityDashboard() {
         <div>
           <div className="flex flex-col sm:flex-row sm:items-center gap-3">
             <h1 className="text-2xl md:text-3xl font-black bg-gradient-to-r from-indigo-400 via-purple-300 to-indigo-200 bg-clip-text text-transparent">
-              Municipal Command Center
+              Command Center
             </h1>
             {(() => {
               const isEmptyMode = issues.length === 0 && !isDemo;
@@ -568,8 +568,8 @@ export default function AuthorityDashboard() {
               );
             })()}
           </div>
-          <p className="text-white/50 text-xs md:text-sm mt-0.5">
-            Operational dashboard for city planning and real-time civic risk orchestration.
+          <p className="text-[10px] text-indigo-400 font-bold uppercase tracking-widest mt-1">
+            Detect Risk &bull; Prioritize Action &bull; Reduce Impact
           </p>
         </div>
 
@@ -596,7 +596,7 @@ export default function AuthorityDashboard() {
             href="/authority/forecast"
             className="flex items-center gap-2 px-4 py-2 bg-indigo-600 border border-indigo-500 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition shadow-lg cursor-pointer"
           >
-            🔮 Forecasts
+            🔮 Forecast Planner
           </Link>
 
           <button
@@ -608,74 +608,81 @@ export default function AuthorityDashboard() {
         </div>
       </div>
 
-      {/* SECTION 1: OPERATIONAL METRIC RIBBON */}
-      <div className="bg-[#0B1220] border border-[#6366F1]/20 rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 md:gap-6 shadow-xl">
-        <div className="flex-1 grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-white/5 w-full text-center md:text-left">
-          <div className="p-2 md:px-6">
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Total Reports</span>
-            <span className="text-xl md:text-2xl font-black text-white">
-              {loading ? "..." : (simReports !== null ? simReports : (stats?.totalIssues ?? 0))}
+      {/* =========================================================
+          🗺️ SECTION 1: MUNICIPAL HEATMAP
+         ========================================================= */}
+      <div className="w-full bg-[#0B1220] border border-[#6366F1]/15 rounded-3xl p-5 shadow-xl space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-[#6366F1]/10 pb-3">
+          <div>
+            <h2 className="text-white font-extrabold text-sm md:text-base flex items-center gap-2">
+              <span>🗺️</span> Municipal Heatmap
+            </h2>
+            <p className="text-xs text-slate-400 mt-0.5">Geospatial hotspots of active environmental issues.</p>
+          </div>
+          
+          <div className="flex gap-1.5 bg-slate-950/50 border border-white/5 rounded-xl p-1 shrink-0 self-start sm:self-auto">
+            {[
+              { filter: "all", label: "All" },
+              { filter: "critical", label: "Critical" },
+              { filter: "breached", label: "SLA Breached" },
+              { filter: "high", label: "High Risk" }
+            ].map(opt => (
+              <button
+                key={opt.filter}
+                onClick={() => setHeatmapFilter(opt.filter as any)}
+                className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition cursor-pointer ${
+                  heatmapFilter === opt.filter
+                    ? "bg-white text-black"
+                    : "text-white/60 hover:text-white"
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Active Hotspots Summary Card */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 bg-slate-950/40 border border-white/5 p-3 rounded-2xl">
+          <div className="bg-slate-900/40 p-2 rounded-xl border border-white/5 text-center">
+            <span className="text-[10px] text-slate-400 uppercase font-bold block">Critical Areas</span>
+            <span className="text-sm font-black text-red-400 block mt-0.5 font-mono">
+              {loading ? "..." : areas.filter(a => a.cri >= 80).length}
             </span>
           </div>
-          <div className="p-2 md:px-6">
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Critical Issues</span>
-            <span className="text-xl md:text-2xl font-black text-rose-400">
-              {loading ? "..." : (simCritical !== null ? simCritical : (stats?.criticalIssues ?? 0))}
+          <div className="bg-slate-900/40 p-2 rounded-xl border border-white/5 text-center">
+            <span className="text-[10px] text-slate-400 uppercase font-bold block">High Risk Areas</span>
+            <span className="text-sm font-black text-orange-400 block mt-0.5 font-mono">
+              {loading ? "..." : areas.filter(a => a.cri >= 50 && a.cri < 80).length}
             </span>
           </div>
-          <div className="p-2 md:px-6">
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">SLA Breached</span>
-            <span className="text-xl md:text-2xl font-black text-amber-400 flex items-center justify-center md:justify-start gap-1.5">
-              {loading ? "..." : (stats?.breachedSlaIssues ?? 0)}
-              {!loading && (stats?.breachedSlaIssues ?? 0) > 0 && <span className="inline-block w-2 h-2 rounded-full bg-amber-500 animate-pulse" />}
+          <div className="bg-slate-900/40 p-2 rounded-xl border border-[#EF4444]/20 text-center">
+            <span className="text-[10px] text-slate-400 uppercase font-bold block">Escalations</span>
+            <span className="text-sm font-black text-yellow-400 block mt-0.5 font-mono">
+              {loading ? "..." : escalations.length}
             </span>
           </div>
-          <div className="p-2 md:px-6">
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">City Risk Index (CRI)</span>
-            <span className="text-xl md:text-2xl font-black text-indigo-400">
-              {loading ? "..." : (simCRI !== null ? simCRI : (stats?.cityRiskIndex ?? 0))}
+          <div className="bg-slate-900/40 p-2 rounded-xl border border-white/5 text-center">
+            <span className="text-[10px] text-slate-400 uppercase font-bold block">Highest Risk Index</span>
+            <span className="text-[10px] font-black text-indigo-300 block mt-0.5 truncate">
+              {loading ? "..." : (areas[0] ? `${areas[0].area} (${areas[0].cri})` : "None")}
             </span>
           </div>
         </div>
-        
-        {simActive && (
-          <div className="px-4 py-2 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 text-[10px] font-black uppercase tracking-wider animate-pulse self-center md:self-auto shrink-0">
-            Simulation Stream Active
-          </div>
-        )}
-      </div>
 
-      {/* SECTION 1.5: MUNICIPAL RESPONSE PERFORMANCE */}
-      <div className="bg-slate-900/40 border border-white/5 p-5 rounded-3xl space-y-4 shadow-xl">
-        <h2 className="text-xs font-bold text-indigo-300 uppercase tracking-widest flex items-center gap-1.5">
-          <span>📊</span> Municipal Response Performance
-        </h2>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-          <PerformanceCard
-            title="Avg Resolution Time"
-            value={loading ? "..." : `${stats?.municipalPerformance?.avgResolutionTimeDays ?? "0"} days`}
-            desc="SLA resolution average"
-          />
-          <PerformanceCard
-            title="Emergency Response SLA"
-            value={loading ? "..." : `${stats?.municipalPerformance?.slaComplianceRate ?? "100"}%`}
-            desc="SLA compliance rating"
-          />
-          <PerformanceCard
-            title="Critical Resolved"
-            value={loading ? "..." : (stats?.municipalPerformance?.criticalResolved ?? 0)}
-            desc="High priority fixes"
-          />
-          <PerformanceCard
-            title="Escalations Prevented"
-            value={loading ? "..." : (stats?.municipalPerformance?.escalationsPrevented ?? 0)}
-            desc="Clusters neutralized"
-          />
-          <PerformanceCard
-            title="Under Observation"
-            value={loading ? "..." : (stats?.municipalPerformance?.underObservation ?? "None")}
-            desc="Highest CRI hot spot"
-            highlight={true}
+        <div className="w-full h-[450px] rounded-2xl overflow-hidden border border-white/5 relative bg-slate-950">
+          {loading ? (
+            <div className="absolute inset-0 flex items-center justify-center bg-slate-950/60 z-10 text-xs">
+              Loading Map...
+            </div>
+          ) : null}
+          <MapComponent
+            issues={heatmapIssues}
+            route={null}
+            mode="dashboard"
+            areas={areas}
+            weather={weather}
+            setWeather={setWeather}
           />
         </div>
       </div>
@@ -689,7 +696,7 @@ export default function AuthorityDashboard() {
             <span>🚒</span> Resource Allocation Engine
           </h2>
           <p className="text-[10px] text-slate-400 mt-0.5">
-            Automated deployment recommendations matching current CRI, escalations, and SLA warning thresholds.
+            Automated deployment recommendations matching current risk levels, active incidents, and response timelines.
           </p>
         </div>
 
@@ -863,13 +870,18 @@ export default function AuthorityDashboard() {
                 ) : issues.length === 0 ? (
                   <tr>
                     <td colSpan={8} className="p-8">
-                      <div className="flex flex-col items-center justify-center text-center py-6 bg-white/5 border border-white/5 rounded-2xl">
-                        <span className="text-3xl mb-2">🔍</span>
-                        <h4 className="text-xs font-bold text-white uppercase tracking-wider">No Active Issues</h4>
-                        <p className="text-[10px] text-white/50 mt-1 max-w-[280px] leading-normal">
-                          All reports are resolved, or no issues match the currently selected filters.
+                      <div className="flex flex-col items-center justify-center text-center py-6 bg-[#0B1220] border border-[#6366F1]/15 rounded-2xl">
+                        <span className="text-3xl mb-2">🛡️</span>
+                        <h4 className="text-xs font-bold text-white uppercase tracking-wider">No operational data available.</h4>
+                        <p className="text-[10px] text-slate-400 mt-1.5 mb-3 max-w-[280px] leading-normal">
+                          There are no active municipal hazards or risk reports registered in this region.
                         </p>
-                        <p className="text-[9px] text-indigo-400 font-bold mt-2">Suggested Action: Clear search or status/risk filters.</p>
+                        <Link
+                          href="/report"
+                          className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-[10px] font-black uppercase tracking-wider transition cursor-pointer shadow-md inline-block"
+                        >
+                          Submit Risk Report
+                        </Link>
                       </div>
                     </td>
                   </tr>
@@ -923,78 +935,47 @@ export default function AuthorityDashboard() {
                           <tr className="bg-[#0B1220]/75 border-b border-white/5">
                             <td colSpan={8} className="p-4" onClick={(e) => e.stopPropagation()}>
                               <div className="space-y-3 max-w-4xl text-xs text-slate-300">
-                                <p className="font-bold text-white uppercase tracking-wider text-[10px]">🔍 Risk Score Breakdown & Verification Telemetry</p>
+                                <p className="font-bold text-indigo-400 uppercase tracking-wider text-[9px] mb-2 flex items-center gap-1.5">
+                                  <span>🔍</span> Risk Assessment Explanation
+                                </p>
                                 
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                  <div className="space-y-1.5">
-                                    <div className="flex justify-between border-b border-white/5 pb-1">
-                                      <span className="text-slate-400">Severity Contribution</span>
-                                      <span className="font-mono text-indigo-300 font-bold">+{issue.breakdown?.severity ?? 0}</span>
-                                    </div>
-                                    <div className="flex justify-between border-b border-white/5 pb-1">
-                                      <span className="text-slate-400">Community Verification ({issue.votes} votes)</span>
-                                      <span className="font-mono text-sky-300 font-bold">+{issue.breakdown?.frequency ?? 0}</span>
-                                    </div>
-                                    <div className="flex justify-between border-b border-white/5 pb-1">
-                                      <span className="text-slate-400">Location Density Contribution</span>
-                                      <span className="font-mono text-emerald-300 font-bold">+{issue.breakdown?.density ?? 0}</span>
-                                    </div>
-                                    <div className="flex justify-between border-b border-white/5 pb-1">
-                                      <span className="text-slate-400">Time Persistence ({ageDays}d unresolved)</span>
-                                      <span className="font-mono text-amber-300 font-bold">+{issue.breakdown?.persistence ?? 0}</span>
-                                    </div>
-                                    <div className="flex justify-between border-b border-white/5 pb-1">
-                                      <span className="text-slate-400">Weather Forecast Multiplier</span>
-                                      <span className="font-mono text-blue-300 font-bold">+{issue.breakdown?.weather ?? 0}</span>
-                                    </div>
-                                    <div className="flex justify-between font-bold border-t border-[#6366F1]/20 pt-1.5 text-white">
-                                      <span>Final Risk Score</span>
-                                      <span className="font-mono text-rose-400">{Math.round(issue.finalRisk || issue.riskValue || 0)}</span>
-                                    </div>
+                                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 bg-black/25 border border-white/5 p-4 rounded-xl">
+                                  <div className="space-y-1">
+                                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Risk Score</span>
+                                    <span className="text-sm font-black text-white font-mono">
+                                      {Math.round(issue.finalRisk || issue.riskValue || 0)} ({issue.riskLevel})
+                                    </span>
                                   </div>
-                                  
-                                  <div className="bg-black/25 border border-white/5 p-3 rounded-xl flex flex-col justify-center">
-                                    <p className="font-bold text-slate-400 uppercase tracking-widest text-[9px] mb-1">Human Explanation</p>
-                                    <p className="text-slate-200 leading-normal text-[11px] italic">
-                                      "{issue.explanation || 'No assessment explanation available for this report.'}"
+
+                                  <div className="space-y-1 md:col-span-2">
+                                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Why Score Is High</span>
+                                    <p className="text-slate-200 leading-relaxed text-[11px]">
+                                      {issue.communityConfirmations !== undefined || issue.votes > 0 ? (
+                                        `${(issue.communityConfirmations || 0) + issue.votes} citizen reports and confirmations, unresolved for ${ageDays} days.`
+                                      ) : (
+                                        `Unresolved reports in high-density corridors for ${ageDays} days.`
+                                      )}
                                     </p>
                                   </div>
 
-                                  {/* Community Verification Engine */}
-                                  {(() => {
-                                    const confirmCount = issue.communityConfirmations || 0;
-                                    const trustScore = Math.min(99, 60 + confirmCount * 5);
-                                    return (
-                                      <div className="bg-black/25 border border-[#10B981]/20 p-3 rounded-xl flex flex-col justify-between">
-                                        <div>
-                                          <p className="font-bold text-emerald-400 uppercase tracking-widest text-[9px] mb-2 flex items-center gap-1.5">
-                                            <span>🛡️</span> Community Verification
-                                          </p>
-                                          <div className="space-y-1.5 text-xs">
-                                            <div className="flex justify-between border-b border-white/5 pb-1">
-                                              <span className="text-slate-400">Reported by:</span>
-                                              <span className="font-bold text-white">1 Citizen</span>
-                                            </div>
-                                            <div className="flex justify-between border-b border-white/5 pb-1">
-                                              <span className="text-slate-400">Confirmed by:</span>
-                                              <span className="font-bold text-indigo-300">{confirmCount} Citizens</span>
-                                            </div>
-                                            <div className="flex justify-between pt-1.5">
-                                              <span className="text-slate-400">Trust Score:</span>
-                                              <span className={`font-mono font-black ${
-                                                trustScore >= 80 ? "text-emerald-400" :
-                                                trustScore >= 65 ? "text-yellow-400" :
-                                                "text-rose-400"
-                                              }`}>{trustScore} / 100</span>
-                                            </div>
-                                          </div>
-                                        </div>
-                                        <div className="mt-3 text-[10px] text-slate-400 leading-normal border-t border-[#10B981]/10 pt-2">
-                                          Anti-spam telemetry active. Trust score reflects validation by nearby independent citizens.
-                                        </div>
-                                      </div>
-                                    );
-                                  })()}
+                                  <div className="space-y-1">
+                                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Expected Impact</span>
+                                    <span className="text-xs font-black text-emerald-400 font-mono block">
+                                      Community Risk Index -{Math.max(4, Math.round((issue.finalRisk || issue.riskValue || 75) * 0.1))}%
+                                    </span>
+                                  </div>
+                                </div>
+                                
+                                <div className="bg-slate-950/40 p-3 rounded-xl border border-white/5 flex items-center justify-between text-[11px]">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-indigo-400 font-bold">Recommended Intervention:</span>
+                                    <span className="text-white font-medium capitalize">
+                                      {issue.issueType === "sewer" ? `Clear sewerage blockage at ${issue.locationName}.` :
+                                       issue.issueType === "pothole" ? `Repair road damage at ${issue.locationName}.` :
+                                       issue.issueType === "garbage" ? `Clear waste accumulation at ${issue.locationName}.` :
+                                       `Dispatch crew to resolve ${issue.issueType} at ${issue.locationName}.`}
+                                    </span>
+                                  </div>
                                 </div>
                               </div>
                             </td>
@@ -1036,11 +1017,11 @@ export default function AuthorityDashboard() {
 
         {/* RIGHT COLUMN: AREA RANKINGS & LIVE ALERTS */}
         <div className="flex flex-col gap-6">
-          {/* AREA RISK RANKINGS (CRI) */}
+          {/* AREA RISK RANKINGS */}
           <div className="bg-slate-900/60 border border-white/5 rounded-3xl p-5 shadow-xl space-y-4">
             <div>
-              <h2 className="text-lg font-bold text-white">Civic Risk Index (CRI)</h2>
-              <p className="text-xs text-white/50">Aggregated priority index by neighborhood density.</p>
+              <h2 className="text-lg font-bold text-white">Community Risk Index</h2>
+              <p className="text-xs text-white/50">Aggregated priority index by neighborhood.</p>
             </div>
 
             <div className="space-y-2.5 overflow-y-auto max-h-[180px] pr-1 scrollbar-thin">
@@ -1049,13 +1030,18 @@ export default function AuthorityDashboard() {
                   <div key={idx} className="h-14 bg-white/5 border border-white/5 rounded-2xl animate-pulse" />
                 ))
               ) : areas.length === 0 ? (
-                <div className="flex flex-col items-center justify-center text-center p-6 bg-white/5 border border-white/5 rounded-2xl min-h-[120px]">
-                  <span className="text-3xl mb-2">🏙️</span>
-                  <h4 className="text-xs font-bold text-white uppercase tracking-wider">No CRI Rankings</h4>
-                  <p className="text-[10px] text-white/50 mt-1 max-w-[200px] leading-normal">
+                <div className="flex flex-col items-center justify-center text-center p-6 bg-[#0B1220] border border-[#6366F1]/15 rounded-2xl min-h-[120px]">
+                  <span className="text-3xl mb-2">🛡️</span>
+                  <h4 className="text-xs font-bold text-white uppercase tracking-wider">No operational data available.</h4>
+                  <p className="text-[10px] text-slate-400 mt-1.5 mb-3 max-w-[200px] leading-normal">
                     No neighborhood reports available to compute ranking indices.
                   </p>
-                  <p className="text-[9px] text-indigo-400 font-bold mt-2">Suggested Action: Select different weather scenarios or report issues.</p>
+                  <Link
+                    href="/report"
+                    className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-[10px] font-black uppercase tracking-wider transition cursor-pointer shadow-md inline-block"
+                  >
+                    Submit Risk Report
+                  </Link>
                 </div>
               ) : (
                 areas.map((area, idx) => (
@@ -1185,188 +1171,14 @@ export default function AuthorityDashboard() {
         </div>
       </div>
 
-      {/* SECTION 3: HEATMAP & RESOLUTION ANALYTICS */}
-      <div className="grid grid-cols-1 xl:grid-cols-5 gap-6">
-        
-        {/* HEATMAP */}
-        <div className="xl:col-span-3 bg-slate-900/60 border border-white/5 rounded-3xl p-5 shadow-xl space-y-4 flex flex-col">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div>
-              <h2 className="text-lg font-bold text-white">Municipal Heatmap</h2>
-              <p className="text-xs text-white/50">Geospatial hotspots of active environmental issues.</p>
-            </div>
-            
-            <div className="flex gap-1.5 bg-slate-950/50 border border-white/5 rounded-xl p-1">
-              {[
-                { filter: "all", label: "All" },
-                { filter: "critical", label: "Critical" },
-                { filter: "breached", label: "SLA Breached" },
-                { filter: "high", label: "High Risk" }
-              ].map(opt => (
-                <button
-                  key={opt.filter}
-                  onClick={() => setHeatmapFilter(opt.filter as any)}
-                  className={`px-2 py-1 rounded-lg text-[10px] font-bold transition cursor-pointer ${
-                    heatmapFilter === opt.filter
-                      ? "bg-white text-black"
-                      : "text-white/60 hover:text-white"
-                  }`}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Active Hotspots Summary Card (Priority Fix 10) */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 bg-slate-955/40 border border-white/5 p-3 rounded-2xl mb-4">
-            <div className="bg-slate-900/40 p-2 rounded-xl border border-white/5 text-center">
-              <span className="text-[10px] text-white/50 uppercase font-bold block">Critical Areas</span>
-              <span className="text-sm font-black text-red-400 block mt-0.5">
-                {loading ? "..." : areas.filter(a => a.cri >= 80).length}
-              </span>
-            </div>
-            <div className="bg-slate-900/40 p-2 rounded-xl border border-white/5 text-center">
-              <span className="text-[10px] text-white/50 uppercase font-bold block">High Risk Areas</span>
-              <span className="text-sm font-black text-orange-400 block mt-0.5">
-                {loading ? "..." : areas.filter(a => a.cri >= 50 && a.cri < 80).length}
-              </span>
-            </div>
-            <div className="bg-slate-900/40 p-2 rounded-xl border border-white/5 text-center">
-              <span className="text-[10px] text-white/50 uppercase font-bold block">Escalations</span>
-              <span className="text-sm font-black text-yellow-400 block mt-0.5">
-                {loading ? "..." : escalations.length}
-              </span>
-            </div>
-            <div className="bg-slate-900/40 p-2 rounded-xl border border-white/5 text-center">
-              <span className="text-[10px] text-white/50 uppercase font-bold block">Highest CRI</span>
-              <span className="text-[10px] font-black text-indigo-300 block mt-0.5 truncate">
-                {loading ? "..." : (areas[0] ? `${areas[0].area} (${areas[0].cri})` : "None")}
-              </span>
-            </div>
-          </div>
-
-          <div className="flex-1 w-full min-h-[550px] rounded-2xl overflow-hidden border border-white/5 relative bg-slate-950">
-            {loading ? (
-              <div className="absolute inset-0 flex items-center justify-center bg-slate-950/60 z-10 text-xs">
-                Loading Map...
-              </div>
-            ) : null}
-            <MapComponent
-              issues={heatmapIssues}
-              route={null}
-              mode="dashboard"
-              areas={areas}
-              weather={weather}
-              setWeather={setWeather}
-            />
-          </div>
-        </div>
-
-        {/* RESOLUTION ANALYTICS */}
-        <div className="xl:col-span-2 bg-slate-900/60 border border-white/5 rounded-3xl p-5 shadow-xl space-y-4 flex flex-col justify-between">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-lg font-bold text-white">Resolution Analytics</h2>
-                <p className="text-xs text-white/50">SLA performance and clearance rates.</p>
-              </div>
-
-              {/* Chart range selector */}
-              <div className="flex gap-1 bg-slate-950/50 border border-white/5 rounded-lg p-0.5">
-                <button
-                  onClick={() => setChartRange("7days")}
-                  className={`px-2 py-0.5 rounded text-[10px] font-semibold transition cursor-pointer ${
-                    chartRange === "7days" ? "bg-white/10 text-white" : "text-white/50 hover:text-white"
-                  }`}
-                >
-                  7 Days
-                </button>
-                <button
-                  onClick={() => setChartRange("30days")}
-                  className={`px-2 py-0.5 rounded text-[10px] font-semibold transition cursor-pointer ${
-                    chartRange === "30days" ? "bg-white/10 text-white" : "text-white/50 hover:text-white"
-                  }`}
-                >
-                  30 Days
-                </button>
-              </div>
-            </div>
-
-            {/* KPI STATS ROW */}
-            {!loading && issues.length === 0 ? (
-              <div className="text-slate-400 text-xs py-12 text-center w-full h-[240px] flex items-center justify-center border border-white/5 rounded-2xl bg-slate-950/40">
-                No Operational Data Available. Submit reports or activate demo dataset to populate analytics.
-              </div>
-            ) : (
-              <>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 bg-slate-950/40 border border-[#6366F1]/15 p-3 rounded-2xl text-center">
-                  <div>
-                    <p className="text-[10px] text-white/50 uppercase font-semibold">Resolution Rate</p>
-                    <p className="text-lg font-black text-indigo-400 mt-0.5">
-                      {loading ? "..." : `${analytics?.summary?.resolutionRate ?? 0}%`}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-[10px] text-white/50 uppercase font-semibold">Target SLA</p>
-                    <p className="text-lg font-black text-emerald-400 mt-0.5">80%</p>
-                  </div>
-                  <div>
-                    <p className="text-[10px] text-white/50 uppercase font-semibold">Status</p>
-                    <p className={`text-[10px] font-black mt-1 px-1 py-0.5 rounded-lg inline-block border ${
-                      (analytics?.summary?.resolutionRate ?? 0) >= 80 
-                        ? "bg-green-500/10 text-green-400 border-green-500/20" 
-                        : "bg-amber-500/10 text-amber-400 border-amber-500/20"
-                    }`}>
-                      {(analytics?.summary?.resolutionRate ?? 0) >= 80 ? "Performing" : "⚠️ Alert"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-[10px] text-white/50 uppercase font-semibold">Proj Rate (7d)</p>
-                    <p className="text-lg font-black text-indigo-300 mt-0.5">
-                      {loading ? "..." : `${Math.min(95, Math.round((analytics?.summary?.resolutionRate ?? 0) * 1.15))}%`}
-                    </p>
-                  </div>
-                </div>
-
-                {/* CHART */}
-                <div className="w-full h-[180px] mt-2">
-                  {loading ? (
-                    <div className="w-full h-full bg-white/5 rounded-2xl animate-pulse" />
-                  ) : (
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={chartData} margin={{ top: 5, right: 5, left: -25, bottom: 0 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                        <XAxis dataKey="date" stroke="rgba(255,255,255,0.3)" style={{ fontSize: 9 }} />
-                        <YAxis stroke="rgba(255,255,255,0.3)" style={{ fontSize: 9 }} />
-                        <Tooltip
-                          contentStyle={{
-                            backgroundColor: "#090d16",
-                            border: "1px solid rgba(255,255,255,0.1)",
-                            borderRadius: "8px",
-                            fontSize: 10,
-                            color: "white"
-                          }}
-                        />
-                        <Legend iconSize={8} wrapperStyle={{ fontSize: 10, paddingTop: 5 }} />
-                        <Line type="monotone" name="Reported" dataKey="reported" stroke="#6366f1" strokeWidth={2} dot={false} />
-                        <Line type="monotone" name="Resolved" dataKey="resolved" stroke="#10b981" strokeWidth={2} dot={false} />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  )}
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* SECTION 4: IMPACT SIMULATOR (CHECKLIST & RESULTS SIDE-BY-SIDE) */}
-      <div className="bg-gradient-to-r from-indigo-950/40 via-slate-900/60 to-indigo-950/40 border border-white/5 rounded-3xl p-5 shadow-xl space-y-4">
+      {/* SECTION 4: INTERVENTION SIMULATOR */}
+      <div className="bg-[#0B1220] border border-[#6366F1]/15 rounded-3xl p-5 shadow-xl space-y-4">
         <div>
-          <h2 className="text-lg font-bold text-white">🎯 Municipal Impact Simulator</h2>
-          <p className="text-xs text-white/50">
-            Select issues below to simulate the outcome of resolving them on the City Risk Index (CRI) in real-time.
+          <h2 className="text-white font-extrabold text-sm md:text-base flex items-center gap-2">
+            <span>🎯</span> Intervention Simulator
+          </h2>
+          <p className="text-xs text-slate-400 mt-0.5">
+            Select reports to simulate the projected impact of resolving them on the Community Risk Index in real-time.
           </p>
         </div>
 
@@ -1374,9 +1186,9 @@ export default function AuthorityDashboard() {
           
           {/* CHECKLIST */}
           <div className="lg:col-span-2 bg-slate-950/40 border border-white/5 rounded-2xl p-4 space-y-3">
-            <p className="text-xs font-semibold text-white/70 uppercase tracking-wide">Top Active Risk Reports</p>
+            <p className="text-[10px] text-indigo-400 font-bold uppercase tracking-widest">Active Incident Checklist</p>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 max-h-[200px] overflow-y-auto pr-1">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 max-h-[160px] overflow-y-auto pr-1 scrollbar-thin">
               {loading ? (
                 Array.from({ length: 4 }).map((_, idx) => (
                   <div key={idx} className="h-10 bg-white/5 rounded-xl animate-pulse" />
@@ -1423,140 +1235,73 @@ export default function AuthorityDashboard() {
           {/* RESULTS PANEL */}
           <div className="bg-slate-950/40 border border-white/5 rounded-2xl p-4 flex flex-col justify-between relative overflow-hidden">
             {simLoading && (
-              <div className="absolute inset-0 bg-slate-950/60 z-10 flex items-center justify-center text-xs">
+              <div className="absolute inset-0 bg-slate-955/60 z-10 flex items-center justify-center text-xs">
                 Simulating...
               </div>
             )}
             
-            <p className="text-xs font-semibold text-white/70 uppercase tracking-wide">Simulation Results</p>
+            <p className="text-[10px] text-indigo-400 font-bold uppercase tracking-wider">Simulation Results</p>
             
             {simulatorSelectedIds.length > 0 && simResults ? (
-              <div className="space-y-4 my-2">
-                {/* Before vs After Risk Projection */}
-                <div className="space-y-3 bg-[#050816]/40 p-4 rounded-xl border border-white/5">
-                  <p className="text-[10px] text-white/50 uppercase font-bold tracking-wider">Before vs After Risk Projection</p>
-                  
-                  <div className="space-y-2.5">
-                    <div>
-                      <div className="flex justify-between text-xs mb-1">
-                        <span className="text-slate-400">Current CRI</span>
-                        <span className="font-bold text-white font-mono">{simResults.originalForecast?.forecasts?.["0d"]?.averageRisk ?? simResults.currentCityRisk ?? 0}</span>
-                      </div>
-                      <div className="w-full bg-white/10 h-3 rounded-full overflow-hidden flex">
-                        <div
-                          className="bg-indigo-500 h-full rounded-full transition-all duration-500"
-                          style={{ width: `${Math.min(100, simResults.originalForecast?.forecasts?.["0d"]?.averageRisk ?? simResults.currentCityRisk ?? 0)}%` }}
-                        />
-                      </div>
+              <div className="space-y-3 my-2 text-xs">
+                <div className="space-y-2 bg-[#050816]/40 p-3 rounded-xl border border-white/5">
+                  <div>
+                    <div className="flex justify-between text-[11px] mb-0.5">
+                      <span className="text-slate-400">Current Risk Index</span>
+                      <span className="font-bold text-white font-mono">{simResults.originalForecast?.forecasts?.["0d"]?.averageRisk ?? simResults.currentCityRisk ?? 0}</span>
                     </div>
-                    
-                    <div>
-                      <div className="flex justify-between text-xs mb-1">
-                        <span className="text-slate-400">Projected CRI</span>
-                        <span className="font-bold text-emerald-400 font-mono">{simResults.remainingForecast?.forecasts?.["0d"]?.averageRisk ?? simResults.projectedCityRisk ?? 0}</span>
-                      </div>
-                      <div className="w-full bg-white/10 h-3 rounded-full overflow-hidden flex">
-                        <div
-                          className="bg-emerald-500 h-full rounded-full transition-all duration-500"
-                          style={{ width: `${Math.min(100, simResults.remainingForecast?.forecasts?.["0d"]?.averageRisk ?? simResults.projectedCityRisk ?? 0)}%` }}
-                        />
-                      </div>
+                    <div className="w-full bg-white/10 h-2 rounded-full overflow-hidden flex">
+                      <div
+                        className="bg-indigo-500 h-full rounded-full transition-all duration-500"
+                        style={{ width: `${Math.min(100, simResults.originalForecast?.forecasts?.["0d"]?.averageRisk ?? simResults.currentCityRisk ?? 0)}%` }}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <div className="flex justify-between text-[11px] mb-0.5">
+                      <span className="text-slate-400">Projected Risk Index</span>
+                      <span className="font-bold text-emerald-400 font-mono">{simResults.remainingForecast?.forecasts?.["0d"]?.averageRisk ?? simResults.projectedCityRisk ?? 0}</span>
+                    </div>
+                    <div className="w-full bg-white/10 h-2 rounded-full overflow-hidden flex">
+                      <div
+                        className="bg-emerald-500 h-full rounded-full transition-all duration-500"
+                        style={{ width: `${Math.min(100, simResults.remainingForecast?.forecasts?.["0d"]?.averageRisk ?? simResults.projectedCityRisk ?? 0)}%` }}
+                      />
                     </div>
                   </div>
                 </div>
 
-                {/* Risk Reduction */}
-                <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3 text-xs space-y-1">
-                  <p className="text-slate-300 font-medium">
-                    Projected Reduction: <strong className="text-white font-extrabold font-mono">
-                      {Math.max(0, Math.round((simResults.currentCityRisk - simResults.projectedCityRisk) * 10) / 10)} Points
-                    </strong>
-                  </p>
-                  <p className="text-emerald-400 font-bold">
-                    Impact: -{simResults.riskReduction ?? 0}%
-                  </p>
+                <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-2.5 text-[11px] flex justify-between items-center text-emerald-400 font-bold">
+                  <span>Projected CRI Drop:</span>
+                  <span className="text-xs font-black">-{simResults.riskReduction ?? 0}%</span>
                 </div>
 
-                {/* Sandbox Stats Grid (Dynamic resolution details) */}
-                <div className="grid grid-cols-3 gap-2 text-center text-[10px] text-slate-300">
-                  <div className="bg-[#050816]/40 border border-white/5 p-2 rounded-xl">
-                    <span className="text-[8px] text-slate-400 uppercase font-bold block">Criticals Removed</span>
-                    <strong className="text-rose-400 text-xs font-mono font-black">{criticalIssuesRemoved}</strong>
+                <div className="grid grid-cols-2 gap-2 text-center text-[9px] text-slate-400">
+                  <div className="bg-[#050816]/40 border border-white/5 p-1.5 rounded-lg">
+                    <span>Criticals Removed</span>
+                    <strong className="text-rose-400 text-xs font-mono font-black block mt-0.5">{criticalIssuesRemoved}</strong>
                   </div>
-                  <div className="bg-[#050816]/40 border border-white/5 p-2 rounded-xl">
-                    <span className="text-[8px] text-slate-400 uppercase font-bold block">Escalations Saved</span>
-                    <strong className="text-yellow-400 text-xs font-mono font-black">{escalationsPreventedCount}</strong>
-                  </div>
-                  <div className="bg-[#050816]/40 border border-white/5 p-2 rounded-xl">
-                    <span className="text-[8px] text-slate-400 uppercase font-bold block">Resolution Effort</span>
-                    <strong className="text-indigo-400 text-xs font-mono font-black">{estimatedResolutionEffort}</strong>
+                  <div className="bg-[#050816]/40 border border-[#6366F1]/10 p-1.5 rounded-lg">
+                    <span>Resolution Effort</span>
+                    <strong className="text-indigo-400 text-xs font-mono font-black block mt-0.5 truncate">{estimatedResolutionEffort}</strong>
                   </div>
                 </div>
-
-                {/* Resolution Timeline */}
-                <div className="bg-[#050816]/40 p-4 rounded-xl border border-white/5 space-y-3">
-                  <p className="text-[10px] text-white/50 uppercase font-bold tracking-wider">Resolution Timeline (Projected CRI Trend)</p>
-                  
-                  <div className="grid grid-cols-4 gap-2 text-center">
-                    {["0d", "7d", "14d", "30d"].map((dayKey) => {
-                      const dayLabel = dayKey === "0d" ? "Day 0" : dayKey === "7d" ? "Day 7" : dayKey === "14d" ? "Day 14" : "Day 30";
-                      const val = simResults.remainingForecast?.forecasts?.[dayKey]?.averageRisk ?? 0;
-                      return (
-                        <div key={dayKey} className="bg-white/5 p-2 rounded-lg border border-white/5">
-                          <p className="text-[9px] text-slate-400 uppercase font-bold">{dayLabel}</p>
-                          <p className="text-xs font-black text-white mt-1 font-mono">{Math.round(val)}</p>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Impact Summary */}
-                {(() => {
-                  const originalAreaForecasts = simResults.originalAreaForecasts || [];
-                  const projectedAreaForecasts = simResults.projectedAreaForecasts || [];
-                  
-                  const topAreaName = originalAreaForecasts.length > 0 ? originalAreaForecasts[0].area : "Saket";
-                  const topAreaCRIBefore = originalAreaForecasts.length > 0 ? originalAreaForecasts[0].cri ?? originalAreaForecasts[0].currentCRI : 0;
-                  
-                  const postArea = projectedAreaForecasts.find((a: any) => a.area === topAreaName);
-                  const topAreaCRIAfter = postArea ? postArea.cri ?? postArea.currentCRI : 0;
-
-                  const hotspotsBefore = originalAreaForecasts.filter((a: any) => (a.cri ?? a.currentCRI) >= 75).length;
-                  const hotspotsAfter = projectedAreaForecasts.filter((a: any) => (a.cri ?? a.currentCRI) >= 75).length;
-                  const hotspotsRemoved = Math.max(0, hotspotsBefore - hotspotsAfter);
-
-                  const hotspotsText = hotspotsRemoved > 0 
-                    ? `remove ${hotspotsRemoved} critical hotspot${hotspotsRemoved !== 1 ? 's' : ''}`
-                    : `mitigate local municipal threats`;
-
-                  return (
-                    <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-xl p-3 text-xs leading-relaxed text-indigo-300">
-                      <p className="font-semibold text-white/90">Impact Summary:</p>
-                      <p className="mt-1">
-                        Resolving these <strong className="text-white">{simulatorSelectedIds.length}</strong> issue{simulatorSelectedIds.length !== 1 ? 's' : ''} would reduce <strong className="text-white capitalize">{topAreaName}</strong> CRI from <strong className="text-white font-mono">{topAreaCRIBefore}</strong> to <strong className="text-white font-mono">{topAreaCRIAfter}</strong> and {hotspotsText}.
-                      </p>
-                    </div>
-                  );
-                })()}
-
               </div>
             ) : simulatorSelectedIds.length > 0 ? (
-              <div className="flex flex-col items-center justify-center text-center p-6 bg-white/5 border border-white/5 rounded-2xl min-h-[160px] my-2 animate-pulse">
-                <span className="text-sm text-slate-400 font-medium">Simulating calculations...</span>
+              <div className="flex flex-col items-center justify-center text-center p-6 bg-white/5 border border-white/5 rounded-2xl min-h-[120px] my-2 animate-pulse">
+                <span className="text-xs text-slate-400 font-medium">Simulating calculations...</span>
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center text-center p-6 bg-[#0B1220]/55 border border-white/5 rounded-2xl min-h-[160px] my-2 text-white">
-                <span className="text-3xl mb-2">📊</span>
-                <p className="text-xs font-semibold text-slate-200">
-                  Select one or more active issues to simulate risk reduction.
+              <div className="flex flex-col items-center justify-center text-center p-4 bg-[#0B1220]/55 border border-white/5 rounded-2xl min-h-[120px] my-2 text-white">
+                <span className="text-2xl mb-1">📊</span>
+                <p className="text-[10px] font-semibold text-slate-200">
+                  Select issues to simulate index drop.
                 </p>
-                <div className="text-[10px] text-slate-400 mt-2 text-left space-y-1 max-w-[280px] mx-auto border-t border-white/5 pt-2 w-full">
-                  <p className="font-bold text-indigo-400 uppercase text-[8px] tracking-wider mb-1">The simulator will estimate:</p>
-                  <div>• CRI reduction</div>
+                <div className="text-[9px] text-slate-400 mt-2 text-left space-y-0.5 border-t border-white/5 pt-2 w-full">
+                  <div>• Estimated Risk Reduction</div>
                   <div>• Critical incidents prevented</div>
-                  <div>• Escalations avoided</div>
-                  <div>• Resolution effort</div>
+                  <div>• Dispatch effort needed</div>
                 </div>
               </div>
             )}
@@ -1564,9 +1309,9 @@ export default function AuthorityDashboard() {
             {simulatorSelectedIds.length > 0 && (
               <button
                 onClick={() => setSimulatorSelectedIds([])}
-                className="w-full py-1.5 bg-white/5 border border-white/10 hover:bg-white/10 rounded-xl text-xs font-semibold transition cursor-pointer"
+                className="w-full py-1.5 mt-2 bg-white/5 border border-white/10 hover:bg-white/10 rounded-xl text-[10px] font-semibold transition cursor-pointer text-slate-300"
               >
-                Reset Simulator Selection
+                Reset Selection
               </button>
             )}
           </div>

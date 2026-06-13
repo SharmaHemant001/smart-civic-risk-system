@@ -348,6 +348,8 @@ export default function Dashboard() {
     });
   };
   const slaRiskWatchlist = getSlaRiskWatchlist();
+  const highRiskAreasCount = topAreas.filter(a => a.cri >= 80).length;
+  const responseDelayRiskCount = slaRiskWatchlist.length;
 
   // Emergency Mode state check
   const showEmergencyMode = cityCRI >= 75 || escalationsCount > 0 || (slaRiskWatchlist && slaRiskWatchlist.some(w => w.probability >= 80));
@@ -432,12 +434,20 @@ export default function Dashboard() {
     };
   }, [resolvedIssues, resolvedCount, cityCRI]);
 
-  const renderEmptyState = (message: string = "No Operational Data Available") => {
+  const renderEmptyState = (message: string = "No operational data available.") => {
     return (
-      <div className="flex flex-col items-center justify-center text-center p-6 bg-[#0B1220] border border-[#6366F1]/15 rounded-xl w-full my-2">
-        <span className="text-xl mb-1.5">🛡️</span>
+      <div className="flex flex-col items-center justify-center text-center p-6 bg-[#0B1220] border border-[#6366F1]/15 rounded-2xl w-full my-2">
+        <span className="text-2xl mb-2">🛡️</span>
         <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider">{message}</h4>
-        <p className="text-[10px] text-slate-400 mt-1">Submit reports or activate demo dataset to populate analytics.</p>
+        <p className="text-[10px] text-slate-400 mt-1.5 mb-3">
+          There are no active municipal hazards or risk reports registered in this region.
+        </p>
+        <Link
+          href="/report"
+          className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-[10px] font-black uppercase tracking-wider transition cursor-pointer shadow-md"
+        >
+          Submit Risk Report
+        </Link>
       </div>
     );
   };
@@ -451,14 +461,14 @@ export default function Dashboard() {
           <div className="space-y-1">
             <div className="flex flex-col sm:flex-row sm:items-center gap-3">
               <h1 className="text-xl md:text-3xl font-extrabold text-white tracking-tight">
-                City Operations Dashboard
+                Executive Dashboard
               </h1>
               <span className={`px-2.5 py-1 border rounded-full text-[10px] font-black uppercase tracking-wider self-start ${dataModeColor}`}>
                 {dataModeLabel}
               </span>
             </div>
-            <p className="text-xs text-slate-400 mt-1">
-              Real-time municipal risk and citywide operational health overview.
+            <p className="text-[10px] text-indigo-400 font-bold uppercase tracking-widest mt-1">
+              Detect Risk &bull; Prioritize Action &bull; Reduce Impact
             </p>
           </div>
           
@@ -501,140 +511,82 @@ export default function Dashboard() {
         )}
 
         {/* 📊 KPI SUMMARY LAYER */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <StatCard title="City Risk Index" value={cityCRI} subtitle={cityCRI >= 75 ? "🔴 Critical" : cityCRI >= 50 ? "🟠 Elevated" : "🟢 Stable"} isAnimating={isAnimating} />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatCard title="Community Risk Index" value={cityCRI} subtitle={cityCRI >= 75 ? "🔴 Critical" : cityCRI >= 50 ? "🟠 Elevated" : "🟢 Stable"} isAnimating={isAnimating} />
           <StatCard title="Critical Issues" value={criticalCount} subtitle="Immediate attention required" isAnimating={isAnimating} />
-          <StatCard title="SLA Risk (Impending)" value={slaRiskWatchlist.length} subtitle="Deadline within 48 hours" isAnimating={isAnimating} />
+          <StatCard title="High Risk Areas" value={highRiskAreasCount} subtitle="Zones with CRI &ge; 80" isAnimating={isAnimating} />
+          <StatCard title="Response Delay Risk" value={responseDelayRiskCount} subtitle="Impending SLA deadlines" isAnimating={isAnimating} />
         </div>
 
         {/* =========================================================
-            ⚡ SECTION 1: EXECUTIVE HIGHEST RISK ZONE & MITIGATION
+            ⚡ SECTION 1: MUNICIPAL RISK RADAR
            ========================================================= */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          
-          {/* Municipal Risk Radar (col-span-7) */}
-          <div className="lg:col-span-7 bg-[#0B1220] border border-[#6366F1]/20 rounded-2xl p-5 shadow-2xl flex flex-col justify-between">
-            <div className="border-b border-[#6366F1]/15 pb-3 flex justify-between items-center">
-              <div>
-                <h2 className="text-[#7C3AED] font-black text-sm uppercase tracking-wider flex items-center gap-2">
-                  <span>📡</span> Municipal Risk Radar
-                </h2>
-                <p className="text-[10px] text-slate-400 mt-0.5">Highest Risk Zone</p>
-              </div>
-              <span className="px-2 py-0.5 rounded bg-[#7C3AED]/20 border border-[#7C3AED]/30 text-[#A78BFA] text-[9px] font-bold uppercase tracking-wider">
-                Centerpiece
-              </span>
+        <div className="w-full bg-[#0B1220] border border-[#6366F1]/20 rounded-2xl p-5 shadow-2xl">
+          <div className="border-b border-[#6366F1]/15 pb-3 flex justify-between items-center">
+            <div>
+              <h2 className="text-[#7C3AED] font-black text-sm uppercase tracking-wider flex items-center gap-2">
+                <span>📡</span> Municipal Risk Radar
+              </h2>
+              <p className="text-[10px] text-slate-400 mt-0.5">Highest Risk Area &amp; Mitigation Target</p>
             </div>
+            <span className="px-2 py-0.5 rounded bg-[#7C3AED]/20 border border-[#7C3AED]/30 text-[#A78BFA] text-[9px] font-bold uppercase tracking-wider">
+              Centerpiece
+            </span>
+          </div>
 
-            {issues.length === 0 ? (
-              renderEmptyState("No active hotspot telemetry.")
-            ) : (
-              <div className="bg-[#050816]/80 border border-indigo-500/30 rounded-2xl p-5 flex flex-col gap-4 relative overflow-hidden shadow-2xl mt-4">
-                <div className="absolute top-[-20%] right-[-20%] w-[50%] h-[50%] bg-indigo-500/20 rounded-full blur-[80px] pointer-events-none" />
+          {issues.length === 0 ? (
+            renderEmptyState("No active hotspot telemetry.")
+          ) : (
+            <div className="bg-[#050816]/80 border border-indigo-500/30 rounded-2xl p-5 mt-4 relative overflow-hidden shadow-2xl">
+              <div className="absolute top-[-20%] right-[-20%] w-[50%] h-[50%] bg-indigo-500/20 rounded-full blur-[80px] pointer-events-none" />
+              
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 relative z-10 text-xs">
                 
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <span className="px-2.5 py-0.5 rounded bg-red-500/10 border border-red-500/20 text-red-400 text-[10px] font-black uppercase tracking-wider animate-pulse">
-                      🚨 Highest Risk Area
-                    </span>
-                    {simState.active && (
-                      <span className="px-2.5 py-0.5 rounded bg-purple-500/10 border border-purple-500/20 text-purple-400 text-[10px] font-black uppercase tracking-wider animate-pulse">
-                        Simulation Active
-                      </span>
-                    )}
+                {/* 1. Highest Risk Area */}
+                <div className="space-y-1.5">
+                  <span className="text-[10px] text-[#A78BFA] font-bold uppercase tracking-wider block">📍 Highest Risk Area</span>
+                  <h3 className="text-lg font-black text-white truncate">
+                    {simState.active && simState.cri >= 89 ? "Dwarka Sector 5" : (topAreas[0]?._id || "Saket")}
+                  </h3>
+                  <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-red-500/10 border border-red-500/20 text-red-400 text-[9px] font-bold">
+                    CRI: {simState.active ? simState.cri : (topAreas[0]?.cri || 0)} (Critical)
                   </div>
+                </div>
 
-                  <div className="space-y-1">
-                    <span className="text-xs text-slate-400 font-bold uppercase tracking-wider block">Hotspot Sector</span>
-                    <h3 className="text-xl font-black text-white tracking-tight">
-                      {simState.active && simState.cri >= 89 ? "Dwarka Sector 5" : (topAreas[0]?._id || "Saket")}
-                    </h3>
-                  </div>
-
-                  <p className="text-[11px] text-slate-300 leading-relaxed font-medium">
+                {/* 2. Reason */}
+                <div className="space-y-1.5">
+                  <span className="text-[10px] text-[#A78BFA] font-bold uppercase tracking-wider block">🚨 Reason</span>
+                  <p className="text-slate-300 leading-relaxed font-medium text-[11px]">
                     {simState.active && simState.alert
                       ? simState.alert
-                      : "This zone exhibits the highest concentration of active infrastructure damage, high-severity reports, and citizen confirmations."}
+                      : `This sector exhibits the highest concentration of active infrastructure hazards (${topAreas[0]?.totalIssues ?? 0} active, ${topAreas[0]?.criticalIssues ?? 0} critical).`}
                   </p>
                 </div>
 
-                <div className="flex items-center justify-between bg-slate-950/40 border border-white/5 rounded-2xl p-4 shadow-inner relative z-10">
-                  <div className="text-left">
-                    <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mb-1">Sector CRI Score</span>
-                    <div className="relative flex items-center justify-start my-1">
-                      <div className="text-3xl font-black text-red-400 drop-shadow-[0_0_15px_rgba(239,68,68,0.4)]">
-                        {simState.active ? simState.cri : (topAreas[0]?.cri || 0)}
-                      </div>
-                    </div>
-                    <span className="text-[9px] text-rose-400 font-bold">Critical Threat Level</span>
+                {/* 3. Recommended Action */}
+                <div className="space-y-1.5">
+                  <span className="text-[10px] text-[#A78BFA] font-bold uppercase tracking-wider block">🛠️ Recommended Action</span>
+                  <p className="text-slate-300 leading-relaxed font-medium text-[11px]">
+                    {weather === "rain" ? "Immediate drainage dispatch and pump clearance." : weather === "heat" ? "Deploy emergency sanitation sweep crews." : "Deploy emergency road repair and hazard cleanup crews."}
+                  </p>
+                </div>
+
+                {/* 4. Expected Risk Reduction */}
+                <div className="space-y-1.5">
+                  <span className="text-[10px] text-[#A78BFA] font-bold uppercase tracking-wider block">📈 Expected Risk Reduction</span>
+                  <div className="space-y-1">
+                    <span className="text-2xl font-black text-emerald-400 block font-mono">
+                      -{potentialReduction}%
+                    </span>
+                    <span className="text-[9px] text-slate-400 block font-bold">Community Risk Index Drop</span>
                   </div>
-
-                  {topAreas[0] && (
-                    <div className="text-[9px] text-right space-y-0.5 text-slate-400 font-semibold border-l border-white/5 pl-4">
-                      <div className="flex justify-between gap-4">
-                        <span>Severity component:</span>
-                        <span className="text-white font-bold">{Math.round(topAreas[0].severityScore || 0)}/100</span>
-                      </div>
-                      <div className="flex justify-between gap-4">
-                        <span>Density component:</span>
-                        <span className="text-white font-bold">{Math.round(topAreas[0].densityScore || 0)}/100</span>
-                      </div>
-                      <div className="flex justify-between gap-4">
-                        <span>Critical ratio:</span>
-                        <span className="text-white font-bold">{Math.round(topAreas[0].criticalIssueScore || 0)}/100</span>
-                      </div>
-                    </div>
-                  )}
                 </div>
 
-                {/* Hotspot Impact Summary */}
-                <div className="border-t border-white/5 pt-3 space-y-1 text-[11px] text-slate-300">
-                  <p className="font-bold uppercase tracking-wider text-rose-400 text-[9px]">Hotspot Impact Summary</p>
-                  <p className="leading-relaxed">
-                    This area has <strong className="text-white">{topAreas[0]?.totalIssues ?? 0} active hazards</strong> ({topAreas[0]?.criticalIssues ?? 0} critical) causing severe spatiotemporal risk concentration.
-                  </p>
-                  <p className="pt-1 text-[#10B981] font-bold">
-                    Expected Impact: CRI -{Math.round((topAreas[0]?.cri ?? 0) * 0.18)}% if addressed.
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Municipal Risk Reduction Potential (col-span-5) */}
-          <div className="lg:col-span-5 bg-[#0B1220] border border-[#10B981]/25 rounded-2xl p-5 shadow-2xl flex flex-col justify-between h-full relative overflow-hidden">
-            <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-emerald-500/10 rounded-full blur-[40px] pointer-events-none" />
-            <div className="space-y-4">
-              <div className="border-b border-white/5 pb-3">
-                <h2 className="text-[#10B981] font-black text-sm uppercase tracking-wider flex items-center gap-2">
-                  <span>🛡️</span> Risk Reduction Potential
-                </h2>
-                <p className="text-[10px] text-slate-400 mt-0.5">Mitigation capacity overview.</p>
-              </div>
-
-              <div className="space-y-4 pt-2">
-                <div>
-                  <span className="text-[9.5px] text-slate-400 font-bold uppercase tracking-wider block">Current City CRI</span>
-                  <span className="text-3xl font-black text-white font-mono">{cityCRI}</span>
-                </div>
-
-                <div>
-                  <span className="text-[9.5px] text-slate-400 font-bold uppercase tracking-wider block">Best Intervention Target</span>
-                  <span className="text-xs font-extrabold text-indigo-300 block mt-0.5 capitalize leading-relaxed">
-                    {recommendedActions[0] ? recommendedActions[0].title.split("–")[0].trim() : "Drainage Cleanup"}
-                  </span>
-                </div>
-
-                <div>
-                  <span className="text-[9.5px] text-slate-400 font-bold uppercase tracking-wider block">Potential Mitigation</span>
-                  <span className="text-2xl font-black text-emerald-400 font-mono">
-                    -{potentialReduction}% CRI Drop
-                  </span>
-                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
+
 
         {/* =========================================================
             🗺️ SECTION 2: CITY RISK MAP CENTERPIECE
@@ -810,12 +762,12 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Section 6: Category Distribution Chart */}
+        {/* Section 6: Incident Distribution */}
         <div className="bg-[#0B1220] border border-[#6366F1]/15 rounded-2xl p-5 shadow-xl">
-          <h2 className="text-white font-extrabold text-sm md:text-lg flex items-center gap-2 border-b border-[#6366F1]/10 pb-3">
-            <span>📊</span> Citywide Incident Category Distribution
+          <h2 className="text-white font-extrabold text-sm md:text-base flex items-center gap-2 border-b border-[#6366F1]/10 pb-3">
+            <span>📊</span> Incident Distribution
           </h2>
-          <div className="h-[220px] mt-4">
+          <div className="h-[160px] mt-4">
             {issues.length === 0 ? (
               <div className="h-full w-full flex items-center justify-center text-xs text-slate-500">
                 Awaiting category metrics telemetry feed.

@@ -20,7 +20,7 @@ export default function Sidebar({
   const primaryNavItems = [
     { path: "/dashboard", icon: "📊", label: "Executive Dashboard" },
     { path: "/authority", icon: "🏛️", label: "Command Center" },
-    { path: "/authority/forecast", icon: "🔮", label: "Risk Forecasts" },
+    { path: "/authority/forecast", icon: "🔮", label: "Forecast Planner" },
     { path: "/report", icon: "📤", label: "Submit Report" },
   ];
 

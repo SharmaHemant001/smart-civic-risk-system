@@ -15,49 +15,47 @@ export default function ReportPage() {
             📡 Risk Report Desk
           </div>
           <h1 className="text-3xl lg:text-4xl font-black tracking-tight leading-none text-white">
-            Submit Municipal Risk Report
+            Submit Risk Report
           </h1>
           <p className="text-white/60 text-xs leading-relaxed max-w-md">
-            Report infrastructure and public safety risks. Focus on: **Hazard Type, Severity, Description, Location, and Evidence**.
+            Detect Risk &bull; Prioritize Action &bull; Reduce Impact
           </p>
         </div>
 
-        {/* 🔄 PROCESS PIPELINE VISUALIZATION */}
-        <div className="space-y-3 max-w-xl">
+        {/* GUIDANCE BULLETS (Your Report Helps) */}
+        <div className="space-y-4 max-w-xl">
           <p className="text-[10px] text-indigo-400 font-extrabold uppercase tracking-widest">
-            🔄 Incident Lifecycle Pipeline
+            Your Report Helps:
           </p>
-          <div className="flex flex-wrap items-center gap-2 bg-[#0B1220]/50 border border-[#6366F1]/15 p-3.5 rounded-2xl text-[10px] font-bold text-slate-300 select-none">
-            <span className="px-2 py-1 bg-white/5 rounded">Report Hazard</span>
-            <span className="text-white/30 font-black">➔</span>
-            <span className="px-2 py-1 bg-white/5 rounded">Risk Analysis</span>
-            <span className="text-white/30 font-black">➔</span>
-            <span className="px-2 py-1 bg-white/5 rounded">Escalation Detection</span>
-            <span className="text-white/30 font-black">➔</span>
-            <span className="px-2 py-1 bg-white/5 rounded">Resource Allocation</span>
-            <span className="text-white/30 font-black">➔</span>
-            <span className="px-2 py-1 bg-white/5 rounded">Risk Reduction</span>
-          </div>
-        </div>
-
-        {/* CORE CAPABILITIES (4 ICON CARDS) */}
-        <div className="space-y-3 max-w-xl">
-          <p className="text-[10px] text-indigo-400 font-extrabold uppercase tracking-widest">
-            🛡️ Platform Core Capabilities
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {[
-              { title: "Detect Risk Clusters", desc: "Groups local reports to identify growing threat zones.", icon: "📡" },
-              { title: "Trigger Escalations", desc: "Alerts crew dispatches of critical SLA risk spikes.", icon: "🚨" },
-              { title: "Prioritize Repairs", desc: "Schedules interventions based on computed risk value.", icon: "🛠️" },
-              { title: "Reduce City Risk", desc: "Lowers the overall City Risk Index (CRI) score.", icon: "🛡️" }
-            ].map((card, idx) => (
-              <div key={idx} className="p-3 bg-slate-900/40 border border-white/5 rounded-xl space-y-1.5 hover:border-indigo-500/25 transition shadow-lg">
-                <span className="text-sm bg-white/5 p-1 rounded-lg inline-block">{card.icon}</span>
-                <h4 className="text-xs font-bold text-white">{card.title}</h4>
-                <p className="text-[10px] text-white/50 leading-normal">{card.desc}</p>
+          <div className="space-y-3">
+            <div className="p-3 bg-slate-900/40 border border-white/5 rounded-xl flex items-center gap-3">
+              <span className="text-lg bg-white/5 p-1 rounded-lg">📍</span>
+              <div className="space-y-0.5 leading-tight">
+                <h4 className="text-xs font-bold text-white">Detect Risk Clusters</h4>
+                <p className="text-[10px] text-white/55">Group local reports to pinpoint emerging threat hotspots.</p>
               </div>
-            ))}
+            </div>
+            <div className="p-3 bg-slate-900/40 border border-white/5 rounded-xl flex items-center gap-3">
+              <span className="text-lg bg-white/5 p-1 rounded-lg">🚨</span>
+              <div className="space-y-0.5 leading-tight">
+                <h4 className="text-xs font-bold text-white">Trigger Escalations</h4>
+                <p className="text-[10px] text-white/55">Alert municipal response teams before hazards become active crises.</p>
+              </div>
+            </div>
+            <div className="p-3 bg-slate-900/40 border border-white/5 rounded-xl flex items-center gap-3">
+              <span className="text-lg bg-white/5 p-1 rounded-lg">🛠️</span>
+              <div className="space-y-0.5 leading-tight">
+                <h4 className="text-xs font-bold text-white">Prioritize Repairs</h4>
+                <p className="text-[10px] text-white/55">Recommend where city repair crews should deploy resources.</p>
+              </div>
+            </div>
+            <div className="p-3 bg-slate-900/40 border border-white/5 rounded-xl flex items-center gap-3">
+              <span className="text-lg bg-white/5 p-1 rounded-lg">📉</span>
+              <div className="space-y-0.5 leading-tight">
+                <h4 className="text-xs font-bold text-white">Reduce City Risk</h4>
+                <p className="text-[10px] text-white/55">Help lower the citywide risk score before incidents escalate.</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>

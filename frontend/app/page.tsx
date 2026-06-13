@@ -118,145 +118,124 @@ export default function HomePage() {
       <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-purple-500/10 rounded-full blur-[180px] pointer-events-none" />
       <div className="absolute top-[30%] right-[10%] w-[350px] h-[350px] bg-blue-500/5 rounded-full blur-[120px] pointer-events-none" />
 
-      {/* 🟢 LIVE TICKER BANNER */}
-      <div className="w-full bg-slate-900 border-b border-white/5 py-2 overflow-hidden relative z-20">
-        <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-xs font-bold text-indigo-400 shrink-0 uppercase tracking-widest border-r border-white/10 pr-4 mr-4">
-            <span className="h-2 w-2 rounded-full bg-indigo-500 animate-pulse" />
-            Live Status
-          </div>
-          <div className="w-full overflow-hidden whitespace-nowrap relative">
-            <div className="inline-flex gap-8 animate-marquee text-xs font-medium text-white/80">
-              {liveActivity.map((act: string, idx: number) => (
-                <span key={idx} className="inline-flex items-center gap-1">
-                  {act}
-                </span>
-              ))}
-              {/* Duplicate for seamless scrolling */}
-              {liveActivity.map((act: string, idx: number) => (
-                <span key={`dup-${idx}`} className="inline-flex items-center gap-1">
-                  {act}
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-
-
       {/* HERO SECTION */}
-      <main className="relative z-10 w-full max-w-5xl mx-auto px-6 py-16 md:py-28 flex flex-col justify-center items-center flex-1">
+      <main className="relative z-10 w-full max-w-5xl mx-auto px-6 py-12 md:py-24 flex flex-col justify-center items-center flex-1">
         
         {/* HERO CENTER: Text & CTAs */}
         <div className="w-full flex flex-col space-y-8 text-center items-center">
           
-          {(() => {
-            const isEmptyMode = issues.length === 0 && !isDemo;
-            const dataModeLabel = isEmptyMode
-              ? "⚪ No Operational Data"
-              : isDemo
-              ? "🟣 Demo Dataset Active"
-              : "🟢 Live Operational Data";
-            const dataModeColor = isEmptyMode
-              ? "bg-slate-500/10 border-slate-500/20 text-slate-400"
-              : isDemo
-              ? "bg-purple-500/10 border-purple-500/20 text-purple-400 animate-pulse"
-              : "bg-emerald-500/10 border-emerald-500/20 text-emerald-400";
-            return (
-              <div className="flex flex-col items-center gap-3">
-                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-indigo-500/15 to-purple-500/15 border border-indigo-500/30 text-indigo-300 text-[10px] font-black uppercase tracking-wider shadow-md shadow-indigo-950/20">
-                  <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 animate-pulse" />
-                  CivicGuard Platform
-                </div>
-                <span className={`px-2.5 py-0.5 border rounded-full text-[9px] font-black uppercase tracking-wider ${dataModeColor}`}>
-                  {dataModeLabel}
-                </span>
-              </div>
-            );
-          })()}
+          <div className="flex flex-col items-center gap-3">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-indigo-500/15 to-purple-500/15 border border-indigo-500/30 text-indigo-300 text-[10px] font-black uppercase tracking-wider shadow-md shadow-indigo-950/20">
+              <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 animate-pulse" />
+              CivicGuard Platform
+            </div>
+            {/* Tagline Slogan branding */}
+            <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">
+              Detect Risk &bull; Prioritize Action &bull; Reduce Impact
+            </span>
+          </div>
           
           <h2 className="text-4xl md:text-6xl font-black tracking-tight leading-[1.1] text-white max-w-3xl">
-            CivicGuard
-            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-300 to-indigo-200 mt-2 text-3xl md:text-5xl font-black">
-              Municipal Risk Intelligence Platform
-            </span>
+            Municipal Risk Intelligence Platform
           </h2>
           
           <div className="space-y-4 max-w-2xl text-center">
-            <p className="text-indigo-200 text-sm md:text-base leading-relaxed font-bold border-y border-white/5 py-4 px-3">
-              Predict Risk. Prioritize Interventions. Reduce Citywide Incidents Before Escalation.
+            <p className="text-indigo-200 text-sm md:text-base leading-relaxed font-bold border-y border-white/5 py-3 px-3">
+              Transform citizen-reported hazards into actionable municipal decisions.
             </p>
-            <p className="text-white/60 text-xs md:text-sm leading-relaxed font-normal max-w-lg mx-auto">
-              Transforming civic reports, environmental signals, and operational data into actionable municipal intelligence.
+            <p className="text-white/60 text-xs md:text-sm leading-relaxed max-w-lg mx-auto">
+              Identify high-risk areas, prioritize interventions, and help authorities reduce citywide risk before incidents escalate.
             </p>
           </div>
  
           {/* INTERACTIVE CALL TO ACTIONS */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center w-full max-w-lg pt-4">
-            <Link href="/report" className="w-full sm:w-auto flex-1">
-              <button className="w-full px-6 py-3.5 rounded-xl bg-slate-900 border border-white/10 hover:border-white/20 text-white font-bold text-xs shadow-md hover:scale-[1.03] active:scale-95 transition cursor-pointer uppercase tracking-wider">
-                📤 Report Hazard
-              </button>
-            </Link>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center w-full max-w-md pt-2">
             <Link href="/dashboard" className="w-full sm:w-auto flex-1">
               <button className="w-full px-6 py-3.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-xs shadow-xl shadow-indigo-950/20 hover:scale-[1.03] active:scale-95 transition cursor-pointer uppercase tracking-wider">
-                📊 Executive Dashboard
+                Explore Dashboard
               </button>
             </Link>
-            <Link href="/authority" className="w-full sm:w-auto flex-1">
-              <button className="w-full px-6 py-3.5 rounded-xl bg-white text-slate-950 font-bold text-xs shadow-xl hover:scale-[1.03] active:scale-95 transition cursor-pointer uppercase tracking-wider">
-                🏛️ Command Center
+            <Link href="/report" className="w-full sm:w-auto flex-1">
+              <button className="w-full px-6 py-3.5 rounded-xl bg-slate-900 border border-white/10 hover:border-white/20 text-white font-bold text-xs shadow-md hover:scale-[1.03] active:scale-95 transition cursor-pointer uppercase tracking-wider">
+                Submit Risk Report
               </button>
             </Link>
           </div>
 
+          {/* 🖥️ HUGE PRODUCT SHOWCASE SCREENSHOT */}
+          <div className="w-full mt-12 bg-slate-900/40 border border-white/10 rounded-3xl p-2 md:p-3 backdrop-blur-md shadow-2xl relative">
+            {/* Browser frame decoration */}
+            <div className="flex items-center justify-between px-4 py-2 border-b border-white/5 bg-slate-950/40 rounded-t-2xl">
+              <div className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-red-500/80" />
+                <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/80" />
+                <span className="w-2.5 h-2.5 rounded-full bg-green-500/80" />
+              </div>
+              <div className="text-[10px] text-white/40 font-mono select-none px-6 py-0.5 rounded bg-black/40 border border-white/5 truncate max-w-xs">
+                civicguard.gov/dashboard
+              </div>
+              <div className="w-12" /> {/* spacer */}
+            </div>
+            {/* Mockup Image */}
+            <div className="relative rounded-b-2xl overflow-hidden aspect-[16/10] bg-slate-950 border-t border-white/5">
+              <img
+                src="/images/dashboard_mockup.png"
+                alt="CivicGuard Executive Dashboard"
+                className="w-full h-full object-cover select-none"
+              />
+            </div>
+          </div>
+
           {/* 🌐 PLATFORM OVERVIEW SECTION */}
-          <div className="w-full mt-16 grid grid-cols-1 md:grid-cols-2 gap-8 text-left bg-slate-900/40 border border-white/5 rounded-3xl p-8 backdrop-blur-md shadow-2xl">
+          <div className="w-full mt-16 flex flex-col gap-12 bg-slate-900/40 border border-white/5 rounded-3xl p-8 backdrop-blur-md shadow-2xl text-left">
             {/* How CivicGuard Works */}
             <div className="space-y-4">
               <h3 className="text-xs font-black uppercase text-indigo-400 tracking-wider">How CivicGuard Works</h3>
-              <ol className="space-y-2.5 text-xs text-white/75 font-semibold">
-                <li className="flex items-center gap-3 bg-white/5 border border-white/5 px-4 py-2 rounded-xl">
-                  <span className="flex items-center justify-center h-5 w-5 rounded-full bg-indigo-500/20 text-indigo-300 font-mono text-[10px]">1</span>
-                  Citizen Reports Hazard
-                </li>
-                <li className="flex items-center gap-3 bg-white/5 border border-white/5 px-4 py-2 rounded-xl">
-                  <span className="flex items-center justify-center h-5 w-5 rounded-full bg-indigo-500/20 text-indigo-300 font-mono text-[10px]">2</span>
-                  AI Risk Analysis
-                </li>
-                <li className="flex items-center gap-3 bg-white/5 border border-white/5 px-4 py-2 rounded-xl">
-                  <span className="flex items-center justify-center h-5 w-5 rounded-full bg-indigo-500/20 text-indigo-300 font-mono text-[10px]">3</span>
-                  Escalation Detection
-                </li>
-                <li className="flex items-center gap-3 bg-white/5 border border-white/5 px-4 py-2 rounded-xl">
-                  <span className="flex items-center justify-center h-5 w-5 rounded-full bg-indigo-500/20 text-indigo-300 font-mono text-[10px]">4</span>
-                  Resource Allocation
-                </li>
-                <li className="flex items-center gap-3 bg-white/5 border border-white/5 px-4 py-2 rounded-xl">
-                  <span className="flex items-center justify-center h-5 w-5 rounded-full bg-indigo-500/20 text-indigo-300 font-mono text-[10px]">5</span>
-                  Risk Reduction
-                </li>
-              </ol>
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-3 md:gap-2 items-center text-center text-xs font-bold text-slate-300">
+                <div className="p-3 bg-white/5 border border-white/5 rounded-xl">Citizen Report</div>
+                <div className="text-indigo-400 font-bold text-sm leading-none flex justify-center rotate-90 md:rotate-0">↓</div>
+                <div className="p-3 bg-white/5 border border-white/5 rounded-xl">Risk Analysis</div>
+                <div className="text-indigo-400 font-bold text-sm leading-none flex justify-center rotate-90 md:rotate-0">↓</div>
+                <div className="p-3 bg-white/5 border border-white/5 rounded-xl">Priority Detection</div>
+                <div className="text-indigo-400 font-bold text-sm leading-none flex justify-center rotate-90 md:rotate-0">↓</div>
+                <div className="p-3 bg-white/5 border border-white/5 rounded-xl">Recommended Actions</div>
+                <div className="text-indigo-400 font-bold text-sm leading-none flex justify-center rotate-90 md:rotate-0">↓</div>
+                <div className="p-3 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 rounded-xl text-white">Risk Reduction</div>
+              </div>
             </div>
 
-            {/* Why Cities Need This */}
-            <div className="space-y-4 flex flex-col justify-between">
-              <div className="space-y-4">
-                <h3 className="text-xs font-black uppercase text-indigo-400 tracking-wider">Why Cities Need This</h3>
-                <ul className="space-y-2.5 text-xs text-white/75 font-semibold">
-                  <li className="flex items-center gap-3 bg-white/5 border border-white/5 px-4 py-2 rounded-xl">
-                    <span className="text-indigo-400">📡</span> Detect emerging hotspots
-                  </li>
-                  <li className="flex items-center gap-3 bg-white/5 border border-white/5 px-4 py-2 rounded-xl">
-                    <span className="text-rose-400">⏱️</span> Prevent SLA breaches
-                  </li>
-                  <li className="flex items-center gap-3 bg-white/5 border border-white/5 px-4 py-2 rounded-xl">
-                    <span className="text-amber-400">🛠️</span> Prioritize repair crews
-                  </li>
-                  <li className="flex items-center gap-3 bg-white/5 border border-white/5 px-4 py-2 rounded-xl">
-                    <span className="text-emerald-400">🛡️</span> Reduce citywide risk
-                  </li>
-                </ul>
+            {/* Core Capabilities */}
+            <div className="space-y-4">
+              <h3 className="text-xs font-black uppercase text-indigo-400 tracking-wider">Core Capabilities</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="p-4 bg-slate-950/60 border border-white/5 rounded-2xl flex items-start gap-3">
+                  <span className="text-lg bg-indigo-500/10 p-2 rounded-xl text-indigo-300">📍</span>
+                  <div className="space-y-1">
+                    <h4 className="text-xs font-bold text-white">Risk Detection</h4>
+                    <p className="text-[10px] text-white/50 leading-relaxed">Identify emerging risk hotspots across municipal zones.</p>
+                  </div>
+                </div>
+                <div className="p-4 bg-slate-950/60 border border-white/5 rounded-2xl flex items-start gap-3">
+                  <span className="text-lg bg-rose-500/10 p-2 rounded-xl text-rose-300">🚨</span>
+                  <div className="space-y-1">
+                    <h4 className="text-xs font-bold text-white">Escalation Monitoring</h4>
+                    <p className="text-[10px] text-white/50 leading-relaxed">Detect growing incidents before they escalate into civic crises.</p>
+                  </div>
+                </div>
+                <div className="p-4 bg-slate-950/60 border border-white/5 rounded-2xl flex items-start gap-3">
+                  <span className="text-lg bg-amber-500/10 p-2 rounded-xl text-amber-300">🛠</span>
+                  <div className="space-y-1">
+                    <h4 className="text-xs font-bold text-white">Resource Allocation</h4>
+                    <p className="text-[10px] text-white/50 leading-relaxed">Recommend where municipal crews and resources should deploy.</p>
+                  </div>
+                </div>
+                <div className="p-4 bg-slate-950/60 border border-white/5 rounded-2xl flex items-start gap-3">
+                  <span className="text-lg bg-emerald-500/10 p-2 rounded-xl text-emerald-300">📉</span>
+                  <div className="space-y-1">
+                    <h4 className="text-xs font-bold text-white">Intervention Planning</h4>
+                    <p className="text-[10px] text-white/50 leading-relaxed">Simulate resolution actions before spending city resources.</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

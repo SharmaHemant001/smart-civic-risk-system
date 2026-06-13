@@ -20,27 +20,27 @@ export default function LoginModal({
 }: LoginModalProps) {
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<string | null>(null);
+  const [localSelectedRole, setLocalSelectedRole] = useState<"operator" | "supervisor" | "admin" | null>(null);
 
   useEffect(() => {
     if (isOpen) {
       setError("");
       setIsSubmitting(false);
-      setSelectedRole(null);
+      setLocalSelectedRole(null);
     }
   }, [isOpen]);
 
   if (!isOpen) return null;
 
-  const handleSelectSession = async (roleKey: "operator" | "supervisor" | "admin") => {
+  const handleContinue = async () => {
+    if (!localSelectedRole) return;
     setError("");
     setIsSubmitting(true);
-    setSelectedRole(roleKey);
     
     try {
       const response = await API.post("/auth/login", {
         idToken: "mock-google-id-token",
-        role: roleKey,
+        role: localSelectedRole,
       });
       const { accessToken, user: backendUser } = response.data;
 
@@ -52,28 +52,27 @@ export default function LoginModal({
 
       const updatedUser = {
         ...backendUser,
-        displayName: roleDisplayNames[roleKey],
-        email: `demo-${roleKey}@civicguard.gov`,
-        role: roleKey,
+        displayName: roleDisplayNames[localSelectedRole],
+        email: `demo-${localSelectedRole}@civicguard.gov`,
+        role: localSelectedRole,
       };
 
       localStorage.setItem("demoMode", "true");
-      localStorage.setItem("role", roleKey);
-      localStorage.setItem("displayName", roleDisplayNames[roleKey]);
+      localStorage.setItem("role", localSelectedRole);
+      localStorage.setItem("displayName", roleDisplayNames[localSelectedRole]);
       localStorage.setItem("authType", "demo");
       localStorage.setItem("accessToken", accessToken);
-      localStorage.setItem("userRole", roleKey);
+      localStorage.setItem("userRole", localSelectedRole);
       localStorage.setItem("isAuthenticated", "true");
       localStorage.setItem("user", JSON.stringify(updatedUser));
 
       // Dispatch login event
       window.dispatchEvent(new Event("civicguard-auth"));
 
-      onSuccess(roleKey);
+      onSuccess(localSelectedRole);
     } catch (err: any) {
       console.error(err);
       setError("Failed to initialize simulated session. Please try again.");
-      setSelectedRole(null);
     } finally {
       setIsSubmitting(false);
     }
@@ -115,37 +114,50 @@ export default function LoginModal({
             {[
               {
                 key: "admin",
-                title: "Enter Demo Administrator Session",
+                title: "Demo Administrator Session",
                 desc: "Full command center capabilities, configurations, and simulator overrides",
                 icon: "🛡️",
               },
               {
                 key: "supervisor",
-                title: "Enter Demo Supervisor Session",
+                title: "Demo Supervisor Session",
                 desc: "Risk trend forecasting, crew dispatches, and emergency simulator access",
                 icon: "📊",
               },
               {
                 key: "operator",
-                title: "Enter Demo Operator Session",
+                title: "Demo Operator Session",
                 desc: "Dispatch queue updates, status reports, and active task reviews",
                 icon: "🛠️",
               },
             ].map((role) => {
-              const isCurrentSubmitting = isSubmitting && selectedRole === role.key;
+              const isSelected = localSelectedRole === role.key;
               return (
                 <button
                   key={role.key}
                   disabled={isSubmitting}
-                  onClick={() => handleSelectSession(role.key as any)}
-                  className="w-full flex items-start gap-3 p-3 rounded-xl bg-neutral-950/60 border border-white/5 hover:border-purple-500/30 hover:bg-neutral-950 text-left transition cursor-pointer group disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={() => setLocalSelectedRole(role.key as any)}
+                  className={`w-full flex items-start gap-3 p-3 rounded-xl bg-neutral-950/60 border hover:bg-neutral-950 text-left transition cursor-pointer group disabled:opacity-50 disabled:cursor-not-allowed ${
+                    isSelected 
+                      ? "border-indigo-500 ring-2 ring-indigo-500/20 bg-neutral-950" 
+                      : "border-white/5 hover:border-white/20"
+                  }`}
                 >
-                  <span className="text-lg bg-neutral-900 p-1.5 rounded-lg group-hover:bg-purple-950/40 transition">
-                    {isCurrentSubmitting ? "⌛" : role.icon}
+                  <div className="flex items-center self-center h-4 mr-1">
+                    <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${
+                      isSelected ? "border-indigo-500 bg-indigo-500" : "border-white/30"
+                    }`}>
+                      {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                    </div>
+                  </div>
+                  <span className="text-lg bg-neutral-900 p-1.5 rounded-lg group-hover:bg-indigo-950/40 transition">
+                    {role.icon}
                   </span>
-                  <div className="space-y-0.5 leading-snug">
-                    <span className="text-xs font-bold text-white group-hover:text-purple-300 transition">
-                      {isCurrentSubmitting ? "Initializing..." : role.title}
+                  <div className="space-y-0.5 leading-snug flex-1">
+                    <span className={`text-xs font-bold transition ${
+                      isSelected ? "text-indigo-300" : "text-white"
+                    }`}>
+                      {role.title}
                     </span>
                     <p className="text-[9px] text-gray-500 group-hover:text-gray-400 leading-normal font-medium">
                       {role.desc}
@@ -155,6 +167,28 @@ export default function LoginModal({
               );
             })}
           </div>
+
+          <button
+            onClick={handleContinue}
+            disabled={isSubmitting || !localSelectedRole}
+            className={`w-full py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition duration-200 cursor-pointer flex items-center justify-center gap-2 ${
+              localSelectedRole && !isSubmitting
+                ? "bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/20"
+                : "bg-white/5 text-white/30 border border-white/5 cursor-not-allowed"
+            }`}
+          >
+            {isSubmitting ? (
+              <>
+                <svg className="animate-spin h-3.5 w-3.5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>Initializing Session...</span>
+              </>
+            ) : (
+              "Continue"
+            )}
+          </button>
 
           <div className="text-center pt-3 text-[10px] text-gray-500 border-t border-white/5 font-semibold">
             Demo Environment — Access levels are simulated for evaluation and demonstration purposes.

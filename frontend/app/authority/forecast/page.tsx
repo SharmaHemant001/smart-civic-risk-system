@@ -419,7 +419,7 @@ export default function ForecastPage() {
             </div>
             <div className="flex flex-col sm:flex-row sm:items-center gap-3">
               <h1 className="text-2xl md:text-3xl font-black bg-gradient-to-r from-indigo-400 via-purple-300 to-indigo-200 bg-clip-text text-transparent mt-1">
-                Predictive Civic Forecasting
+                Forecast &amp; Intervention Planner
               </h1>
               {(() => {
                 const isEmptyMode = areaForecasts.length === 0 && !isDemo;
@@ -440,8 +440,8 @@ export default function ForecastPage() {
                 );
               })()}
             </div>
-            <p className="text-white/50 text-xs md:text-sm mt-0.5">
-              Chronological risk forecasting center displaying growth trends, drivers, and intervention sandboxes.
+            <p className="text-[10px] text-indigo-400 font-bold uppercase tracking-widest mt-1">
+              Detect Risk &bull; Prioritize Action &bull; Reduce Impact
             </p>
           </div>
 
@@ -579,7 +579,7 @@ export default function ForecastPage() {
                   >
                     <p className="text-xs font-black text-white">{rec.name}</p>
                     <p className="text-[10px] text-emerald-400 font-bold mt-0.5">-{rec.expectedReduction ?? 0}% Risk Drop</p>
-                    <p className="text-[9px] text-white/50 mt-1.5 leading-normal">{rec.details}</p>
+                    <p className="text-[9px] text-white/50 mt-1.5 leading-normal line-clamp-2">{rec.details}</p>
                   </button>
                 ))}
               </div>
@@ -590,7 +590,19 @@ export default function ForecastPage() {
               <p className="text-[10px] text-white/45 font-bold uppercase tracking-wider mb-2">Select Active Issues ({activeIssues.length})</p>
               <div className="max-h-[200px] overflow-y-auto border border-white/5 rounded-xl bg-slate-950 p-2 space-y-1.5 scrollbar-thin">
                 {activeIssues.length === 0 ? (
-                  <p className="text-xs text-white/50 p-4 text-center">No Operational Data Available. Submit reports or activate demo dataset to populate analytics.</p>
+                  <div className="flex flex-col items-center justify-center text-center p-6 bg-[#0B1220] border border-[#6366F1]/15 rounded-xl my-2">
+                    <span className="text-2xl mb-1.5">🛡️</span>
+                    <h4 className="text-xs font-bold text-white uppercase tracking-wider">No operational data available.</h4>
+                    <p className="text-[9px] text-slate-400 mt-1 mb-3">
+                      Submit reports or activate demo dataset to populate analytics.
+                    </p>
+                    <Link
+                      href="/report"
+                      className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-[9px] font-black uppercase tracking-wider transition cursor-pointer shadow-md inline-block"
+                    >
+                      Submit Risk Report
+                    </Link>
+                  </div>
                 ) : (
                   activeIssues.map((issue) => (
                     <label
