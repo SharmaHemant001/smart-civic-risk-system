@@ -238,6 +238,8 @@ export default function Dashboard() {
             new Date(a.createdAt || 0).getTime()
         );
         setIssues(sorted);
+        console.log("Demo Mode:", isDemo);
+        console.log("Dashboard Data Loaded (Issues)");
       } catch (err) {
         console.error(err);
         if (isDemo) {
@@ -245,6 +247,8 @@ export default function Dashboard() {
         } else {
           setIssues([]);
         }
+        console.log("Demo Mode:", isDemo);
+        console.log("Dashboard Data Loaded (Issues Catch)");
       }
     };
     fetchIssues();
@@ -272,6 +276,7 @@ export default function Dashboard() {
 
         setTopAreas(cleaned);
         setStats(statData);
+        console.log("Dashboard Data Loaded (Stats/Areas)");
       } catch (err) {
         console.error(err);
         if (isDemo) {
@@ -281,6 +286,7 @@ export default function Dashboard() {
           setTopAreas([]);
           setStats(null);
         }
+        console.log("Dashboard Data Loaded (Stats/Areas Catch)");
       } finally {
         setLoadingAreas(false);
       }

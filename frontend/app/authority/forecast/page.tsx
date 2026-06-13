@@ -79,6 +79,63 @@ type ActiveIssue = {
   severity?: string;
 };
 
+const MOCK_FORECAST_CITY: CityForecastData = {
+  forecasts: {
+    "0d": { averageRisk: 84, criticalCount: 2, totalRisk: 84, confidence: 95 },
+    "7d": { averageRisk: 90, criticalCount: 3, totalRisk: 90, confidence: 90 },
+    "14d": { averageRisk: 94, criticalCount: 4, totalRisk: 94, confidence: 85 },
+    "30d": { averageRisk: 98, criticalCount: 5, totalRisk: 98, confidence: 80 }
+  },
+  growthPercent: 16.7,
+  assumptions: {
+    weather: "clear",
+    activeIssues: 5,
+    criticalIssues: 2,
+    horizon: "30 Days"
+  }
+};
+
+const MOCK_FORECAST_RECOMMENDATIONS: InterventionSet[] = [
+  {
+    name: "Dwarka Sewer Clearing",
+    expectedReduction: 18,
+    issueIds: ["demo-1"],
+    details: "Clearing sewer blockage in Dwarka to prevent overflows."
+  },
+  {
+    name: "Connaught Place Sewer Sweep",
+    expectedReduction: 15,
+    issueIds: ["demo-5"],
+    details: "Secondary sweep of active sewer complaints in CP."
+  }
+];
+
+const MOCK_FORECAST_AREAS: AreaForecast[] = [
+  { area: "Dwarka", totalIssues: 2, currentCRI: 94, forecast7Days: 96, forecast14Days: 98, forecast30Days: 99, increasePercent: 5.3, explanation: "Increasing risk due to sewer backlog.", drivers: ["sewer"] },
+  { area: "Saket", totalIssues: 1, currentCRI: 57, forecast7Days: 60, forecast14Days: 62, forecast30Days: 65, increasePercent: 14.0, explanation: "Increasing risk due to road hazards.", drivers: ["pothole"] },
+  { area: "Vasant Kunj", totalIssues: 1, currentCRI: 44, forecast7Days: 44, forecast14Days: 45, forecast30Days: 45, increasePercent: 2.2, explanation: "Stable hazard profile.", drivers: ["garbage"] },
+  { area: "Karol Bagh", totalIssues: 1, currentCRI: 55, forecast7Days: 57, forecast14Days: 58, forecast30Days: 60, increasePercent: 9.1, explanation: "Increasing risk due to construction activity.", drivers: ["construction"] }
+];
+
+const MOCK_FORECAST_ALERTS: RiskAlert[] = [
+  {
+    area: "Dwarka",
+    currentCRI: 94,
+    forecastCRI: 99,
+    increase: 5,
+    increasePercent: 5.3,
+    drivers: ["Sewer backlog", "Local density spike"]
+  }
+];
+
+const MOCK_FORECAST_ISSUES: ActiveIssue[] = [
+  { _id: "demo-1", issueType: "sewer", locationName: "Dwarka", finalRisk: 96, riskLevel: "Critical", status: "pending", description: "Critical sewer blockage", latitude: 28.5921, longitude: 77.0460, votes: 21 },
+  { _id: "demo-2", issueType: "pothole", locationName: "Saket", finalRisk: 84, riskLevel: "High", status: "in-progress", description: "Pothole near metro station", latitude: 28.5244, longitude: 77.1933, votes: 14 },
+  { _id: "demo-3", issueType: "garbage", locationName: "Vasant Kunj", finalRisk: 58, riskLevel: "Medium", status: "pending", description: "Garbage accumulation", latitude: 28.5168, longitude: 77.1998, votes: 8 },
+  { _id: "demo-4", issueType: "construction", locationName: "Karol Bagh", finalRisk: 79, riskLevel: "High", status: "in-progress", description: "Construction debris on road", latitude: 28.6505, longitude: 77.2028, votes: 19 },
+  { _id: "demo-5", issueType: "sewer", locationName: "Connaught Place", finalRisk: 92, riskLevel: "Critical", status: "pending", description: "Sewer overflow at block E", latitude: 28.5700, longitude: 77.2200, votes: 27 }
+];
+
 export default function ForecastPage() {
   const router = useRouter();
   const [authChecked, setAuthChecked] = useState(false);
@@ -134,8 +191,25 @@ export default function ForecastPage() {
       setSimResults(null);
     } catch (err) {
       console.error("Failed to load forecasting metrics:", err);
+      if (isDemo) {
+        setCityData(MOCK_FORECAST_CITY);
+        setRecommendations(MOCK_FORECAST_RECOMMENDATIONS);
+        setAreaForecasts(MOCK_FORECAST_AREAS);
+        setAlerts(MOCK_FORECAST_ALERTS);
+        setActiveIssues(MOCK_FORECAST_ISSUES);
+        setSimSelectedIds([]);
+        setSimResults(null);
+      } else {
+        setCityData(null);
+        setRecommendations([]);
+        setAreaForecasts([]);
+        setAlerts([]);
+        setActiveIssues([]);
+      }
     } finally {
       setLoading(false);
+      console.log("Demo Mode:", isDemo);
+      console.log("Forecast Planner Loaded");
     }
   };
 
@@ -191,6 +265,17 @@ export default function ForecastPage() {
         setHeatmapPoints(res.data);
       } catch (err) {
         console.error("Failed to load forecast heatmap:", err);
+        if (isDemo) {
+          setHeatmapPoints([
+            [28.5921, 77.0460, 0.9],
+            [28.5244, 77.1933, 0.7],
+            [28.5168, 77.1998, 0.4],
+            [28.6505, 77.2028, 0.7],
+            [28.5700, 77.2200, 0.8]
+          ]);
+        } else {
+          setHeatmapPoints([]);
+        }
       } finally {
         setMapLoading(false);
       }
@@ -209,6 +294,31 @@ export default function ForecastPage() {
       setSimResults(res.data);
     } catch (err) {
       console.error("Simulation query failed:", err);
+      if (isDemo) {
+        const baseRisk = MOCK_FORECAST_CITY.forecasts["30d"].totalRisk;
+        const resolvedCount = selectedIds.length;
+        const projectedCityRisk30d = Math.max(10, baseRisk - (resolvedCount * 14));
+        setSimResults({
+          originalCityRisk30d: baseRisk,
+          projectedCityRisk30d,
+          improvement: baseRisk - projectedCityRisk30d,
+          cityForecast: {
+            forecasts: {
+              "0d": { averageRisk: 84, criticalCount: 2, totalRisk: 84, confidence: 95 },
+              "7d": { averageRisk: Math.round(90 * (projectedCityRisk30d / baseRisk)), criticalCount: Math.max(0, 3 - resolvedCount), totalRisk: Math.round(90 * (projectedCityRisk30d / baseRisk)), confidence: 90 },
+              "14d": { averageRisk: Math.round(94 * (projectedCityRisk30d / baseRisk)), criticalCount: Math.max(0, 4 - resolvedCount), totalRisk: Math.round(94 * (projectedCityRisk30d / baseRisk)), confidence: 85 },
+              "30d": { averageRisk: Math.round(projectedCityRisk30d / 5), criticalCount: Math.max(0, 5 - resolvedCount), totalRisk: projectedCityRisk30d, confidence: 80 }
+            },
+            growthPercent: Math.round(((projectedCityRisk30d - 84) / 84) * 100 * 10) / 10,
+            assumptions: {
+              weather: weather,
+              activeIssues: Math.max(0, 5 - resolvedCount),
+              criticalIssues: Math.max(0, 2 - resolvedCount),
+              horizon: "30 Days"
+            }
+          }
+        });
+      }
     } finally {
       setSimLoading(false);
     }
@@ -468,7 +578,7 @@ export default function ForecastPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {["7d", "30d"].map((day) => {
             const label = day === "7d" ? "7 Days" : "30 Days";
-            const metrics = currentCityForecast?.forecasts[day as keyof typeof currentCityForecast.forecasts];
+            const metrics = currentCityForecast?.forecasts ? currentCityForecast.forecasts[day as keyof typeof currentCityForecast.forecasts] : undefined;
             return (
               <div
                 key={day}

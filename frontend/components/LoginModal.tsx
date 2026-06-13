@@ -36,19 +36,29 @@ export default function LoginModal({
     if (!localSelectedRole) return;
     setError("");
     setIsSubmitting(true);
+
+    console.log("Role Selected:", localSelectedRole);
     
+    const roleDisplayNames = {
+      operator: "Demo Operator",
+      supervisor: "Demo Supervisor",
+      admin: "Demo Admin",
+    };
+
+    const localMockUser = {
+      id: `mock-id-${localSelectedRole}`,
+      displayName: roleDisplayNames[localSelectedRole],
+      email: `demo-${localSelectedRole}@civicguard.gov`,
+      role: localSelectedRole,
+      profilePhoto: ""
+    };
+
     try {
       const response = await API.post("/auth/login", {
         idToken: "mock-google-id-token",
         role: localSelectedRole,
       });
       const { accessToken, user: backendUser } = response.data;
-
-      const roleDisplayNames = {
-        operator: "Demo Operator",
-        supervisor: "Demo Supervisor",
-        admin: "Demo Admin",
-      };
 
       const updatedUser = {
         ...backendUser,
@@ -66,13 +76,30 @@ export default function LoginModal({
       localStorage.setItem("isAuthenticated", "true");
       localStorage.setItem("user", JSON.stringify(updatedUser));
 
+      console.log("Session Created: Demo Mode = true (Backend Connected)");
+
       // Dispatch login event
       window.dispatchEvent(new Event("civicguard-auth"));
 
       onSuccess(localSelectedRole);
     } catch (err: any) {
-      console.error(err);
-      setError("Failed to initialize simulated session. Please try again.");
+      console.warn("Backend authentication failed, falling back to local client-side demo session:", err);
+      
+      localStorage.setItem("demoMode", "true");
+      localStorage.setItem("role", localSelectedRole);
+      localStorage.setItem("displayName", roleDisplayNames[localSelectedRole]);
+      localStorage.setItem("authType", "demo");
+      localStorage.setItem("accessToken", "mock-local-demo-token-12345");
+      localStorage.setItem("userRole", localSelectedRole);
+      localStorage.setItem("isAuthenticated", "true");
+      localStorage.setItem("user", JSON.stringify(localMockUser));
+
+      console.log("Session Created: Demo Mode = true (Local Fallback Active)");
+
+      // Dispatch login event
+      window.dispatchEvent(new Event("civicguard-auth"));
+
+      onSuccess(localSelectedRole);
     } finally {
       setIsSubmitting(false);
     }

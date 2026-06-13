@@ -52,6 +52,143 @@ type AreaRank = {
   trend: string;
 };
 
+const MOCK_AUTHORITY_STATS = {
+  totalIssues: 5,
+  criticalIssues: 2,
+  breachedSlaIssues: 1,
+  cityRiskIndex: 84,
+  municipalPerformance: {
+    avgResolutionTimeDays: 2.4,
+    slaComplianceRate: 80,
+    criticalResolved: 4,
+    escalationsPrevented: 3,
+    underObservation: "Dwarka"
+  }
+};
+
+const MOCK_AUTHORITY_ISSUES: Issue[] = [
+  {
+    _id: "demo-1",
+    issueType: "sewer",
+    locationName: "Dwarka",
+    latitude: 28.5921,
+    longitude: 77.0460,
+    votes: 21,
+    communityConfirmations: 8,
+    riskScore: "Critical",
+    riskLevel: "Critical",
+    riskValue: 96,
+    finalRisk: 96,
+    status: "pending",
+    createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+    slaDeadline: new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString(),
+    slaStatus: "Warning",
+    slaHoursRemaining: 12
+  },
+  {
+    _id: "demo-2",
+    issueType: "pothole",
+    locationName: "Saket",
+    latitude: 28.5244,
+    longitude: 77.1933,
+    votes: 14,
+    communityConfirmations: 5,
+    riskScore: "High",
+    riskLevel: "High",
+    riskValue: 84,
+    finalRisk: 84,
+    status: "in-progress",
+    createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+    slaDeadline: new Date(Date.now() + 36 * 60 * 60 * 1000).toISOString(),
+    slaStatus: "OK",
+    slaHoursRemaining: 36
+  },
+  {
+    _id: "demo-3",
+    issueType: "garbage",
+    locationName: "Vasant Kunj",
+    latitude: 28.5168,
+    longitude: 77.1998,
+    votes: 8,
+    communityConfirmations: 2,
+    riskScore: "Medium",
+    riskLevel: "Medium",
+    riskValue: 58,
+    finalRisk: 58,
+    status: "pending",
+    createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+    slaDeadline: new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString(),
+    slaStatus: "OK",
+    slaHoursRemaining: 72
+  },
+  {
+    _id: "demo-4",
+    issueType: "construction",
+    locationName: "Karol Bagh",
+    latitude: 28.6505,
+    longitude: 77.2028,
+    votes: 19,
+    communityConfirmations: 6,
+    riskScore: "High",
+    riskLevel: "High",
+    riskValue: 79,
+    finalRisk: 79,
+    status: "in-progress",
+    createdAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+    slaDeadline: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+    slaStatus: "Warning",
+    slaHoursRemaining: 24
+  },
+  {
+    _id: "demo-5",
+    issueType: "sewer",
+    locationName: "Connaught Place",
+    latitude: 28.5700,
+    longitude: 77.2200,
+    votes: 27,
+    communityConfirmations: 12,
+    riskScore: "Critical",
+    riskLevel: "Critical",
+    riskValue: 92,
+    finalRisk: 92,
+    status: "pending",
+    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    slaDeadline: new Date(Date.now() + 18 * 60 * 60 * 1000).toISOString(),
+    slaStatus: "Warning",
+    slaHoursRemaining: 18
+  }
+];
+
+const MOCK_AUTHORITY_AREAS = [
+  { rank: 1, area: "Dwarka", totalIssues: 2, criticalIssues: 1, sumRisk: 188, averageRisk: 94, densityScore: 100, criticalScore: 100, cri: 94, trend: "Increasing" },
+  { rank: 2, area: "Saket", totalIssues: 1, criticalIssues: 0, sumRisk: 84, averageRisk: 84, densityScore: 50, criticalScore: 0, cri: 57, trend: "Stable" },
+  { rank: 3, area: "Vasant Kunj", totalIssues: 1, criticalIssues: 0, sumRisk: 58, averageRisk: 58, densityScore: 50, criticalScore: 0, cri: 44, trend: "Stable" },
+  { rank: 4, area: "Karol Bagh", totalIssues: 1, criticalIssues: 0, sumRisk: 79, averageRisk: 79, densityScore: 50, criticalScore: 0, cri: 55, trend: "Stable" }
+];
+
+const MOCK_AUTHORITY_ANALYTICS = {
+  distribution: [
+    { name: "sewer", value: 2 },
+    { name: "pothole", value: 1 },
+    { name: "garbage", value: 1 },
+    { name: "construction", value: 1 }
+  ],
+  resolvedTrend: [
+    { date: "Mon", resolved: 2 },
+    { date: "Tue", resolved: 3 },
+    { date: "Wed", resolved: 1 },
+    { date: "Thu", resolved: 4 },
+    { date: "Fri", resolved: 2 },
+    { date: "Sat", resolved: 0 },
+    { date: "Sun", resolved: 1 }
+  ]
+};
+
+const MOCK_AUTHORITY_ESCALATIONS = [
+  { _id: "esc-1", issueId: "demo-1", locationName: "Dwarka", issueType: "sewer", severity: "Critical", riskScore: 96, description: "Sewer risk concentration in Dwarka", createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString() },
+  { _id: "esc-2", issueId: "demo-5", locationName: "Connaught Place", issueType: "sewer", severity: "Critical", riskScore: 92, description: "Sewer risk concentration in Connaught Place", createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString() }
+];
+
 export default function AuthorityDashboard() {
   const router = useRouter();
   const [authChecked, setAuthChecked] = useState(false);
@@ -197,6 +334,11 @@ export default function AuthorityDashboard() {
       setEscalations(res.data);
     } catch (err) {
       console.error("Failed to load escalations:", err);
+      if (isDemo) {
+        setEscalations(MOCK_AUTHORITY_ESCALATIONS);
+      } else {
+        setEscalations([]);
+      }
     } finally {
       setEscalationsLoading(false);
     }
@@ -228,7 +370,7 @@ export default function AuthorityDashboard() {
       
       const allowedRoles = ["operator", "supervisor", "admin", "dispatcher", "manager", "fieldcrew"];
       const userRole = user?.role ? user.role.toLowerCase() : "";
- 
+  
       // Debug Log
       console.log("AUTHORITY ROUTE AUTH DEBUG:", {
         loading: !authChecked,
@@ -238,7 +380,7 @@ export default function AuthorityDashboard() {
         isTokenValid,
         isDemo: isDemoMode
       });
- 
+  
       if (isDemoMode) {
         setAuthChecked(true);
       } else if (!isTokenValid) {
@@ -307,8 +449,24 @@ export default function AuthorityDashboard() {
       }
     } catch (err) {
       console.error("Failed to load authority command center metrics:", err);
+      if (isDemo) {
+        setStats(MOCK_AUTHORITY_STATS);
+        setIssues(MOCK_AUTHORITY_ISSUES);
+        setAreas(MOCK_AUTHORITY_AREAS);
+        setAnalytics(MOCK_AUTHORITY_ANALYTICS);
+        if (simulatorSelectedIds.length === 0) {
+          setSimulatorSelectedIds(["demo-1", "demo-5", "demo-4"]);
+        }
+      } else {
+        setStats(null);
+        setIssues([]);
+        setAreas([]);
+        setAnalytics(null);
+      }
     } finally {
       setLoading(false);
+      console.log("Demo Mode:", isDemo);
+      console.log("Authority Command Center Loaded");
     }
   };
 
@@ -332,6 +490,21 @@ export default function AuthorityDashboard() {
         setSimResults(res.data);
       } catch (err) {
         console.error("Impact simulation failed:", err);
+        if (isDemo) {
+          const resolvedCount = simulatorSelectedIds.length;
+          const currentCityRisk = 84;
+          const projectedCityRisk = Math.max(10, currentCityRisk - (resolvedCount * 12));
+          setSimResults({
+            currentCityRisk,
+            projectedCityRisk,
+            riskReduction: currentCityRisk - projectedCityRisk,
+            originalAreaForecasts: MOCK_AUTHORITY_AREAS,
+            projectedAreaForecasts: MOCK_AUTHORITY_AREAS.map(a => ({
+              ...a,
+              cri: Math.max(10, a.cri - (resolvedCount * 10))
+            }))
+          });
+        }
       } finally {
         setSimLoading(false);
       }
@@ -417,7 +590,7 @@ export default function AuthorityDashboard() {
   const totalPages = Math.ceil(sortedIssues.length / itemsPerPage);
 
   const resourceAllocations = useMemo(() => {
-    if (areas.length === 0) return [];
+    if (!areas || areas.length === 0) return [];
     
     const breachIssue = [...issues].filter(i => !["resolved", "invalid"].includes(i.status) && i.slaDeadline)
       .sort((a, b) => new Date(a.slaDeadline || 0).getTime() - new Date(b.slaDeadline || 0).getTime())[0];

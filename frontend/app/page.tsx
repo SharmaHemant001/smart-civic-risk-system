@@ -119,7 +119,7 @@ export default function HomePage() {
       <div className="absolute top-[30%] right-[10%] w-[350px] h-[350px] bg-blue-500/5 rounded-full blur-[120px] pointer-events-none" />
 
       {/* HERO SECTION */}
-      <main className="relative z-10 w-full max-w-5xl mx-auto px-6 py-4 md:py-8 flex flex-col justify-center items-center flex-1">
+      <main className="relative z-10 w-full max-w-5xl mx-auto px-6 pt-16 pb-12 flex flex-col justify-start items-center flex-1">
         
         {/* HERO CENTER: Text & CTAs */}
         <div className="w-full flex flex-col space-y-4 text-center items-center">
@@ -166,7 +166,7 @@ export default function HomePage() {
           </div>
 
           {/* 🖥️ GLOWING PRODUCT SHOWCASE SCREENSHOT */}
-          <div className="w-full max-w-3xl mt-5 bg-slate-900/40 border border-indigo-500/20 rounded-3xl p-1.5 backdrop-blur-md shadow-[0_0_30px_rgba(99,102,241,0.15)] hover:shadow-[0_0_45px_rgba(99,102,241,0.35)] transition-all duration-700 hover:scale-[1.005] relative">
+          <div className="w-full max-w-3xl mt-6 bg-slate-900/40 border border-indigo-500/20 rounded-3xl p-1.5 backdrop-blur-md shadow-[0_0_30px_rgba(99,102,241,0.15)] hover:shadow-[0_0_45px_rgba(99,102,241,0.35)] transition-all duration-300 ease-out hover:-translate-y-1 relative">
             {/* Browser frame decoration */}
             <div className="flex items-center justify-between px-4 py-1.5 border-b border-white/5 bg-slate-950/40 rounded-t-2xl">
               <div className="flex items-center gap-1.5">

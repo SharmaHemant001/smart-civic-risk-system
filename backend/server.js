@@ -50,6 +50,9 @@ const allowedOrigins = ["http://localhost:3000", "http://127.0.0.1:3000"];
 if (process.env.FRONTEND_URL) {
   allowedOrigins.push(process.env.FRONTEND_URL);
 }
+if (process.env.CLIENT_URL) {
+  allowedOrigins.push(process.env.CLIENT_URL);
+}
 
 app.use(cors({
   origin: function (origin, callback) {
