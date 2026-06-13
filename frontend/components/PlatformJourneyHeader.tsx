@@ -202,37 +202,11 @@ export default function PlatformJourneyHeader({
     <>
       <div className="w-full bg-[#070B14] border-b border-white/10 px-4 py-3 flex flex-col md:flex-row md:items-center justify-between gap-3 select-none z-30">
         
-        {/* BRAND LOGO & BREADCRUMBS */}
+        {/* BRAND LOGO */}
         <div className="flex flex-wrap items-center gap-2 md:gap-3">
-          <div className="flex items-center gap-1.5 border-r border-white/10 pr-3 mr-1">
+          <div className="flex items-center gap-1.5 pr-3 mr-1">
             <span className="text-sm bg-indigo-600/20 text-indigo-400 border border-indigo-500/20 p-1.5 rounded-lg">🤖</span>
             <span className="text-xs font-black uppercase tracking-wider text-white">CivicGuard</span>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-1.5 text-[10px]">
-            {steps.map((step, idx) => {
-              const isActive = idx === activeIndex;
-              const isPast = idx < activeIndex;
-              
-              return (
-                <React.Fragment key={step.path}>
-                  {idx > 0 && <span className="text-white/20">➔</span>}
-                  <button
-                    onClick={(e) => handleStepClick(e, step.path)}
-                    className={`flex items-center gap-1 px-2 py-1 rounded-lg transition-all cursor-pointer font-bold ${
-                      isActive
-                        ? "bg-indigo-600/25 border border-indigo-500/40 text-indigo-300 shadow-md shadow-indigo-500/5 scale-105"
-                        : isPast
-                        ? "text-white/60 hover:text-white hover:bg-white/5"
-                        : "text-white/30 hover:text-white hover:bg-white/5"
-                    }`}
-                  >
-                    <span>{step.icon}</span>
-                    <span className="hidden sm:inline">{step.name}</span>
-                  </button>
-                </React.Fragment>
-              );
-            })}
           </div>
         </div>
 
@@ -262,99 +236,12 @@ export default function PlatformJourneyHeader({
               className="px-2.5 py-1 bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 rounded-lg font-black flex items-center gap-1 transition cursor-pointer animate-pulse"
             >
               <span>🛡️</span>
-              <span>Municipal Access</span>
-            </button>
-          )}
-
-          {/* SIMULATION CONTROLS */}
-          {simActive ? (
-            <button
-              onClick={() => setShowSimModal(true)}
-              className="px-2.5 py-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-lg border border-purple-500/20 font-black flex items-center gap-1.5 shadow-md shadow-purple-500/10 cursor-pointer animate-pulse"
-            >
-              <span>⚡ Sim Stage {simStep}/6</span>
-            </button>
-          ) : (
-            <button
-              onClick={startSimulation}
-              className="px-2.5 py-1 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-lg font-black flex items-center gap-1.5 transition cursor-pointer"
-            >
-              <span>▶ Start Crisis Simulation</span>
+              <span>Open Demo</span>
             </button>
           )}
         </div>
 
       </div>
-
-      {/* SIMULATOR STEP CONTROLLER MODAL */}
-      {showSimModal && simActive && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-neutral-900 border border-purple-500/30 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl relative">
-            <button
-              onClick={() => setShowSimModal(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-white text-sm cursor-pointer"
-            >
-              ✕
-            </button>
-
-            <div className="space-y-1">
-              <span className="text-xs font-black text-purple-400 uppercase tracking-widest block">
-                ⚡ City Crisis Simulator
-              </span>
-              <h3 className="text-base font-black text-white">
-                {simInfo[simStep - 1].title}
-              </h3>
-            </div>
-
-            <p className="text-[11px] text-gray-400 leading-relaxed font-medium">
-              {simInfo[simStep - 1].desc}
-            </p>
-
-            {/* Step visualization dots */}
-            <div className="flex justify-center gap-1.5 py-1">
-              {simInfo.map((_, idx) => (
-                <span
-                  key={idx}
-                  className={`h-1.5 w-1.5 rounded-full transition-all duration-300 ${
-                    idx + 1 === simStep
-                      ? "bg-purple-500 w-4 shadow-lg shadow-purple-500/40"
-                      : idx + 1 < simStep
-                      ? "bg-purple-400/55"
-                      : "bg-white/10"
-                  }`}
-                />
-              ))}
-            </div>
-
-            {/* Actions */}
-            <div className="flex gap-2.5 pt-2">
-              <button
-                onClick={stopSimulation}
-                className="flex-1 py-2 border border-white/5 hover:bg-white/5 text-[10px] text-gray-400 font-bold rounded-xl transition cursor-pointer"
-              >
-                Reset Demo
-              </button>
-              
-              {simStep > 1 && (
-                <button
-                  onClick={prevSimStep}
-                  className="px-3 py-2 bg-white/5 hover:bg-white/10 text-[10px] text-white font-bold rounded-xl border border-white/10 transition cursor-pointer"
-                >
-                  Back
-                </button>
-              )}
-
-              <button
-                onClick={nextSimStep}
-                className="flex-[2] py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-[10px] font-black rounded-xl shadow-lg border border-purple-500/10 transition cursor-pointer"
-              >
-                {simStep === 6 ? "Finish Simulation" : "Next Stage ➔"}
-              </button>
-            </div>
-
-          </div>
-        </div>
-      )}
     </>
   );
 }

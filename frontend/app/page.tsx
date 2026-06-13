@@ -119,12 +119,12 @@ export default function HomePage() {
       <div className="absolute top-[30%] right-[10%] w-[350px] h-[350px] bg-blue-500/5 rounded-full blur-[120px] pointer-events-none" />
 
       {/* HERO SECTION */}
-      <main className="relative z-10 w-full max-w-5xl mx-auto px-6 py-12 md:py-24 flex flex-col justify-center items-center flex-1">
+      <main className="relative z-10 w-full max-w-5xl mx-auto px-6 py-4 md:py-8 flex flex-col justify-center items-center flex-1">
         
         {/* HERO CENTER: Text & CTAs */}
-        <div className="w-full flex flex-col space-y-8 text-center items-center">
+        <div className="w-full flex flex-col space-y-4 text-center items-center">
           
-          <div className="flex flex-col items-center gap-3">
+          <div className="flex flex-col items-center gap-2">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-indigo-500/15 to-purple-500/15 border border-indigo-500/30 text-indigo-300 text-[10px] font-black uppercase tracking-wider shadow-md shadow-indigo-950/20">
               <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 animate-pulse" />
               CivicGuard Platform
@@ -135,43 +135,46 @@ export default function HomePage() {
             </span>
           </div>
           
-          <h2 className="text-4xl md:text-6xl font-black tracking-tight leading-[1.1] text-white max-w-3xl">
+          <h2 className="text-3xl md:text-5xl font-black tracking-tight leading-[1.1] text-white max-w-3xl">
             Municipal Risk Intelligence Platform
           </h2>
           
-          <div className="space-y-4 max-w-2xl text-center">
-            <p className="text-indigo-200 text-sm md:text-base leading-relaxed font-bold border-y border-white/5 py-3 px-3">
+          <div className="space-y-2 max-w-2xl text-center">
+            <p className="text-indigo-200 text-xs md:text-sm leading-relaxed font-bold border-y border-white/5 py-2 px-3">
               Transform citizen-reported hazards into actionable municipal decisions.
             </p>
-            <p className="text-white/60 text-xs md:text-sm leading-relaxed max-w-lg mx-auto">
+            <p className="text-white/60 text-[11px] md:text-xs leading-relaxed max-w-lg mx-auto">
               Identify high-risk areas, prioritize interventions, and help authorities reduce citywide risk before incidents escalate.
+            </p>
+            <p className="text-indigo-400/80 text-[10px] md:text-xs font-bold uppercase tracking-wider mt-1.5">
+              Built for Municipal Authorities, Smart Cities, and Civic Operations Teams.
             </p>
           </div>
  
           {/* INTERACTIVE CALL TO ACTIONS */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center w-full max-w-md pt-2">
+          <div className="flex flex-col sm:flex-row gap-3 justify-center items-center w-full max-w-md pt-1">
             <Link href="/dashboard" className="w-full sm:w-auto flex-1">
-              <button className="w-full px-6 py-3.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-xs shadow-xl shadow-indigo-950/20 hover:scale-[1.03] active:scale-95 transition cursor-pointer uppercase tracking-wider">
+              <button className="w-full px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-xs shadow-xl shadow-indigo-950/20 hover:scale-[1.03] active:scale-95 transition cursor-pointer uppercase tracking-wider">
                 Explore Dashboard
               </button>
             </Link>
             <Link href="/report" className="w-full sm:w-auto flex-1">
-              <button className="w-full px-6 py-3.5 rounded-xl bg-slate-900 border border-white/10 hover:border-white/20 text-white font-bold text-xs shadow-md hover:scale-[1.03] active:scale-95 transition cursor-pointer uppercase tracking-wider">
+              <button className="w-full px-5 py-2.5 rounded-xl bg-slate-900 border border-white/10 hover:border-white/20 text-white font-bold text-xs shadow-md hover:scale-[1.03] active:scale-95 transition cursor-pointer uppercase tracking-wider">
                 Submit Risk Report
               </button>
             </Link>
           </div>
 
-          {/* 🖥️ HUGE PRODUCT SHOWCASE SCREENSHOT */}
-          <div className="w-full mt-12 bg-slate-900/40 border border-white/10 rounded-3xl p-2 md:p-3 backdrop-blur-md shadow-2xl relative">
+          {/* 🖥️ GLOWING PRODUCT SHOWCASE SCREENSHOT */}
+          <div className="w-full max-w-3xl mt-5 bg-slate-900/40 border border-indigo-500/20 rounded-3xl p-1.5 backdrop-blur-md shadow-[0_0_30px_rgba(99,102,241,0.15)] hover:shadow-[0_0_45px_rgba(99,102,241,0.35)] transition-all duration-700 hover:scale-[1.005] relative">
             {/* Browser frame decoration */}
-            <div className="flex items-center justify-between px-4 py-2 border-b border-white/5 bg-slate-950/40 rounded-t-2xl">
+            <div className="flex items-center justify-between px-4 py-1.5 border-b border-white/5 bg-slate-950/40 rounded-t-2xl">
               <div className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-red-500/80" />
-                <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/80" />
-                <span className="w-2.5 h-2.5 rounded-full bg-green-500/80" />
+                <span className="w-2 h-2 rounded-full bg-red-500/80" />
+                <span className="w-2 h-2 rounded-full bg-yellow-500/80" />
+                <span className="w-2 h-2 rounded-full bg-green-500/80" />
               </div>
-              <div className="text-[10px] text-white/40 font-mono select-none px-6 py-0.5 rounded bg-black/40 border border-white/5 truncate max-w-xs">
+              <div className="text-[9px] text-white/40 font-mono select-none px-6 py-0.5 rounded bg-black/40 border border-white/5 truncate max-w-xs">
                 civicguard.gov/dashboard
               </div>
               <div className="w-12" /> {/* spacer */}
@@ -187,20 +190,34 @@ export default function HomePage() {
           </div>
 
           {/* 🌐 PLATFORM OVERVIEW SECTION */}
-          <div className="w-full mt-16 flex flex-col gap-12 bg-slate-900/40 border border-white/5 rounded-3xl p-8 backdrop-blur-md shadow-2xl text-left">
+          <div className="w-full mt-10 flex flex-col gap-8 bg-slate-900/40 border border-white/5 rounded-3xl p-6 backdrop-blur-md shadow-2xl text-left">
             {/* How CivicGuard Works */}
             <div className="space-y-4">
               <h3 className="text-xs font-black uppercase text-indigo-400 tracking-wider">How CivicGuard Works</h3>
-              <div className="grid grid-cols-1 md:grid-cols-5 gap-3 md:gap-2 items-center text-center text-xs font-bold text-slate-300">
-                <div className="p-3 bg-white/5 border border-white/5 rounded-xl">Citizen Report</div>
-                <div className="text-indigo-400 font-bold text-sm leading-none flex justify-center rotate-90 md:rotate-0">↓</div>
-                <div className="p-3 bg-white/5 border border-white/5 rounded-xl">Risk Analysis</div>
-                <div className="text-indigo-400 font-bold text-sm leading-none flex justify-center rotate-90 md:rotate-0">↓</div>
-                <div className="p-3 bg-white/5 border border-white/5 rounded-xl">Priority Detection</div>
-                <div className="text-indigo-400 font-bold text-sm leading-none flex justify-center rotate-90 md:rotate-0">↓</div>
-                <div className="p-3 bg-white/5 border border-white/5 rounded-xl">Recommended Actions</div>
-                <div className="text-indigo-400 font-bold text-sm leading-none flex justify-center rotate-90 md:rotate-0">↓</div>
-                <div className="p-3 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 rounded-xl text-white">Risk Reduction</div>
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-3 md:gap-4 items-stretch text-center text-xs font-bold">
+                {[
+                  { name: "Citizen Report", icon: "👥", desc: "Report hazards with GPS & photos", path: "/report" },
+                  { name: "Risk Analysis", icon: "⚖️", desc: "Process base risk calculations", path: "/dashboard" },
+                  { name: "Escalation Detection", icon: "🏛️", desc: "Track high-risk zone spikes", path: "/authority" },
+                  { name: "Action Recommendation", icon: "🔮", desc: "Simulate mitigation options", path: "/authority/forecast" },
+                  { name: "Risk Reduction", icon: "🚗", desc: "Optimize dispatch paths", path: "/driver" }
+                ].map((step) => (
+                  <Link
+                    key={step.path}
+                    href={step.path}
+                    className="p-4 bg-slate-950/60 border border-white/5 hover:border-indigo-500/30 rounded-2xl flex flex-col items-center justify-between gap-2 transition hover:scale-[1.02] cursor-pointer group shadow-lg"
+                  >
+                    <div className="text-xl bg-white/5 p-2 rounded-xl group-hover:bg-indigo-950/40 transition">
+                      {step.icon}
+                    </div>
+                    <span className="text-xs font-bold text-white group-hover:text-indigo-300 transition">
+                      {step.name}
+                    </span>
+                    <p className="text-[9px] text-slate-500 font-medium leading-normal mt-1">
+                      {step.desc}
+                    </p>
+                  </Link>
+                ))}
               </div>
             </div>
 
