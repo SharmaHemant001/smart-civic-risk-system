@@ -153,9 +153,8 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const mode = localStorage.getItem("demoMode");
-      // If not explicitly disabled ("false"), default to Demo Mode to preserve mock telemetry
-      setIsDemo(mode !== "false");
+      const mode = localStorage.getItem("demoMode") === "true";
+      setIsDemo(mode);
     }
   }, []);
 
@@ -223,10 +222,10 @@ export default function Dashboard() {
   // Fetch Issues from DB
   useEffect(() => {
     const fetchIssues = async () => {
-      const isDemoMode = typeof window !== "undefined" ? localStorage.getItem("demoMode") !== "false" : true;
-      if (isDemoMode) {
+      const isDemo = typeof window !== "undefined" && localStorage.getItem("demoMode") === "true";
+      if (isDemo) {
         setIssues(MOCK_DEMO_ISSUES);
-        console.log("Demo Mode (Frontend-Only):", isDemoMode);
+        console.log("Demo Mode (Frontend-Only):", isDemo);
         console.log("Dashboard Data Loaded (Mock Issues)");
         return;
       }
@@ -264,12 +263,12 @@ export default function Dashboard() {
   // Fetch Top Areas & Homepage Stats
   useEffect(() => {
     const fetchTopAreas = async () => {
-      const isDemoMode = typeof window !== "undefined" ? localStorage.getItem("demoMode") !== "false" : true;
-      if (isDemoMode) {
+      const isDemo = typeof window !== "undefined" && localStorage.getItem("demoMode") === "true";
+      if (isDemo) {
         setTopAreas(MOCK_DEMO_TOP_AREAS);
         setStats(MOCK_DEMO_STATS);
         setLoadingAreas(false);
-        console.log("Demo Mode (Frontend-Only):", isDemoMode);
+        console.log("Demo Mode (Frontend-Only):", isDemo);
         console.log("Dashboard Data Loaded (Mock Stats/Areas)");
         return;
       }

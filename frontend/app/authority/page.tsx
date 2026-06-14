@@ -329,8 +329,8 @@ export default function AuthorityDashboard() {
   }, [simulatorSelectedIds, issues]);
 
   const loadEscalations = async () => {
-    const isDemoMode = typeof window !== "undefined" ? localStorage.getItem("demoMode") !== "false" : true;
-    if (isDemoMode) {
+    const isDemo = typeof window !== "undefined" && localStorage.getItem("demoMode") === "true";
+    if (isDemo) {
       setEscalations(MOCK_AUTHORITY_ESCALATIONS);
       setEscalationsLoading(false);
       return;
@@ -348,8 +348,8 @@ export default function AuthorityDashboard() {
 
   const handleCheckEscalations = async () => {
     setCheckingEscalations(true);
-    const isDemoMode = typeof window !== "undefined" ? localStorage.getItem("demoMode") !== "false" : true;
-    if (isDemoMode) {
+    const isDemo = typeof window !== "undefined" && localStorage.getItem("demoMode") === "true";
+    if (isDemo) {
       setTimeout(() => {
         setCheckingEscalations(false);
         console.log("Mock Check Escalations Complete");
@@ -368,7 +368,7 @@ export default function AuthorityDashboard() {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const isDemoMode = localStorage.getItem("demoMode") !== "false";
+      const isDemoMode = localStorage.getItem("demoMode") === "true";
       setIsDemo(isDemoMode);
       const token = localStorage.getItem("accessToken");
       const isTokenValid = token && token !== "null" && token !== "undefined";
@@ -425,8 +425,8 @@ export default function AuthorityDashboard() {
 
   // Load dashboard data
   const loadDashboardData = async () => {
-    const isDemoMode = typeof window !== "undefined" ? localStorage.getItem("demoMode") !== "false" : true;
-    if (isDemoMode) {
+    const isDemo = typeof window !== "undefined" && localStorage.getItem("demoMode") === "true";
+    if (isDemo) {
       console.log("Authority Demo Mode Active - Skipping API requests");
       setStats(MOCK_AUTHORITY_STATS);
       setIssues(MOCK_AUTHORITY_ISSUES);
@@ -540,8 +540,8 @@ export default function AuthorityDashboard() {
     if (!authChecked) return;
     const runSimulation = async () => {
       setTimeout(() => setSimLoading(true), 0);
-      const isDemoMode = typeof window !== "undefined" ? localStorage.getItem("demoMode") !== "false" : true;
-      if (isDemoMode) {
+      const isDemo = typeof window !== "undefined" && localStorage.getItem("demoMode") === "true";
+      if (isDemo) {
         const resolvedCount = simulatorSelectedIds.length;
         const currentCityRisk = 84;
         const projectedCityRisk = Math.max(10, currentCityRisk - (resolvedCount * 12));
@@ -594,8 +594,8 @@ export default function AuthorityDashboard() {
     if (!bulkAction || selectedIds.length === 0) return;
     setBulkLoading(true);
     setShowBulkModal(false);
-    const isDemoMode = typeof window !== "undefined" ? localStorage.getItem("demoMode") !== "false" : true;
-    if (isDemoMode) {
+    const isDemo = typeof window !== "undefined" && localStorage.getItem("demoMode") === "true";
+    if (isDemo) {
       setIssues(prev =>
         prev.map(issue =>
           selectedIds.includes(issue._id)
@@ -633,6 +633,11 @@ export default function AuthorityDashboard() {
 
   // CSV Exporter
   const handleExportCSV = () => {
+    const isDemo = typeof window !== "undefined" && localStorage.getItem("demoMode") === "true";
+    if (isDemo) {
+      alert("CSV export is simulated in Demo Mode. (Dataset contains mock NCR hazards)");
+      return;
+    }
     const weatherParam = `weather=${weather}`;
     const searchParam = search ? `&search=${encodeURIComponent(search)}` : "";
     const typeParam = filterType ? `&issueType=${filterType}` : "";

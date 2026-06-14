@@ -20,7 +20,7 @@ export default function HomePage() {
 
   useEffect(() => {
     const fetchStats = async () => {
-      const isDemoMode = typeof window !== "undefined" ? (localStorage.getItem("demoMode") !== "false") : true;
+      const isDemoMode = typeof window !== "undefined" ? (localStorage.getItem("demoMode") === "true" || localStorage.getItem("demoMode") === null) : true;
       setIsDemo(isDemoMode);
 
       if (isDemoMode) {
@@ -141,14 +141,14 @@ export default function HomePage() {
  
           {/* INTERACTIVE CALL TO ACTIONS */}
           <div className="flex flex-col sm:flex-row gap-3 justify-center items-center w-full max-w-md pt-1">
-            <Link href="/dashboard" className="w-full sm:w-auto flex-1">
+            <Link href="/?login=true" className="w-full sm:w-auto flex-1">
               <button className="w-full px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-xs shadow-xl shadow-indigo-950/20 hover:scale-[1.03] active:scale-95 transition cursor-pointer uppercase tracking-wider">
-                Explore Dashboard
+                Open Demo
               </button>
             </Link>
-            <Link href="/report" className="w-full sm:w-auto flex-1">
+            <Link href="/dashboard" className="w-full sm:w-auto flex-1">
               <button className="w-full px-5 py-2.5 rounded-xl bg-slate-900 border border-white/10 hover:border-white/20 text-white font-bold text-xs shadow-md hover:scale-[1.03] active:scale-95 transition cursor-pointer uppercase tracking-wider">
-                Submit Risk Report
+                Explore Dashboard
               </button>
             </Link>
           </div>
@@ -199,6 +199,15 @@ export default function HomePage() {
           {/* Live Interactive Preview */}
           <div className="w-full max-w-4xl mt-8 transition-all duration-300 relative">
             <DashboardPreview />
+          </div>
+
+          {/* Open Live Dashboard CTA */}
+          <div className="mt-8 text-center animate-fadeIn">
+            <Link href="/dashboard">
+              <button className="px-8 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-black text-xs uppercase tracking-wider shadow-lg hover:scale-105 active:scale-95 transition cursor-pointer">
+                Open Live Dashboard ➔
+              </button>
+            </Link>
           </div>
 
         </div>

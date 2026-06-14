@@ -167,8 +167,8 @@ export default function ForecastPage() {
 
   // Load Initial Dashboard Metrics
   const loadForecastData = async () => {
-    const isDemoMode = typeof window !== "undefined" ? localStorage.getItem("demoMode") !== "false" : true;
-    if (isDemoMode) {
+    const isDemo = typeof window !== "undefined" && localStorage.getItem("demoMode") === "true";
+    if (isDemo) {
       console.log("Forecast Demo Mode Active - Skipping API requests");
       setCityData(MOCK_FORECAST_CITY);
       setRecommendations(MOCK_FORECAST_RECOMMENDATIONS);
@@ -255,7 +255,7 @@ export default function ForecastPage() {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const isDemoMode = localStorage.getItem("demoMode") !== "false";
+      const isDemoMode = localStorage.getItem("demoMode") === "true";
       setIsDemo(isDemoMode);
       const token = localStorage.getItem("accessToken");
       const isTokenValid = token && token !== "null" && token !== "undefined";
@@ -300,8 +300,8 @@ export default function ForecastPage() {
     if (!authChecked) return;
     const fetchHeatmap = async () => {
       setMapLoading(true);
-      const isDemoMode = typeof window !== "undefined" ? localStorage.getItem("demoMode") !== "false" : true;
-      if (isDemoMode) {
+      const isDemo = typeof window !== "undefined" && localStorage.getItem("demoMode") === "true";
+      if (isDemo) {
         setHeatmapPoints([
           [28.5921, 77.0460, 0.9],
           [28.5244, 77.1933, 0.7],
@@ -338,8 +338,8 @@ export default function ForecastPage() {
   // Execute Intervention Planner Simulation
   const runSimulation = async (selectedIds: string[]) => {
     setSimLoading(true);
-    const isDemoMode = typeof window !== "undefined" ? localStorage.getItem("demoMode") !== "false" : true;
-    if (isDemoMode) {
+    const isDemo = typeof window !== "undefined" && localStorage.getItem("demoMode") === "true";
+    if (isDemo) {
       const baseRisk = MOCK_FORECAST_CITY.forecasts["30d"].totalRisk;
       const resolvedCount = selectedIds.length;
       const projectedCityRisk30d = Math.max(10, baseRisk - (resolvedCount * 14));

@@ -11,10 +11,43 @@ export default function LayoutClient({ children }: any) {
   const pathname = usePathname();
 
   const [isOpen, setIsOpen] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userRole, setUserRole] = useState("");
-  const [displayName, setDisplayName] = useState("");
-  const [isDemoMode, setIsDemoMode] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("accessToken");
+      return !!(token && token !== "null" && token !== "undefined");
+    }
+    return false;
+  });
+  const [userRole, setUserRole] = useState(() => {
+    if (typeof window !== "undefined") {
+      const userStr = localStorage.getItem("user");
+      try {
+        if (userStr) {
+          const user = JSON.parse(userStr);
+          return user?.role || "";
+        }
+      } catch (err) {}
+    }
+    return "";
+  });
+  const [displayName, setDisplayName] = useState(() => {
+    if (typeof window !== "undefined") {
+      const userStr = localStorage.getItem("user");
+      try {
+        if (userStr) {
+          const user = JSON.parse(userStr);
+          return user?.displayName || "";
+        }
+      } catch (err) {}
+    }
+    return "";
+  });
+  const [isDemoMode, setIsDemoMode] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("demoMode") === "true";
+    }
+    return false;
+  });
 
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [modalTargetRoute, setModalTargetRoute] = useState("");
@@ -156,13 +189,15 @@ export default function LayoutClient({ children }: any) {
     <div className="flex h-screen overflow-hidden bg-black">
 
       {/* 🟣 SIDEBAR (DESKTOP) */}
-      <div className="hidden md:block">
-        <Sidebar
-          isAuthenticated={isAuthenticated}
-          userRole={userRole}
-          onProtectedClick={handleProtectedClick}
-        />
-      </div>
+      {pathname !== "/" && (
+        <div className="hidden md:block">
+          <Sidebar
+            isAuthenticated={isAuthenticated}
+            userRole={userRole}
+            onProtectedClick={handleProtectedClick}
+          />
+        </div>
+      )}
 
       {/* 📱 MOBILE SIDEBAR */}
       {isOpen && (
@@ -189,21 +224,23 @@ export default function LayoutClient({ children }: any) {
       <main className="min-w-0 flex-1 h-screen flex flex-col bg-black overflow-hidden">
 
         {/* 📱 MOBILE HEADER */}
-        <div className="sticky top-0 z-40 md:hidden flex items-center justify-between p-4 bg-black backdrop-blur border-b border-white/10">
+        {pathname !== "/" && (
+          <div className="sticky top-0 z-40 md:hidden flex items-center justify-between p-4 bg-black backdrop-blur border-b border-white/10">
 
-          <button
-            onClick={() => setIsOpen(true)}
-            className="text-white text-2xl"
-          >
-            ☰
-          </button>
+            <button
+              onClick={() => setIsOpen(true)}
+              className="text-white text-2xl"
+            >
+              ☰
+            </button>
 
-          <h1 className="text-white font-semibold text-sm">
-            CivicGuard
-          </h1>
+            <h1 className="text-white font-semibold text-sm">
+              CivicGuard
+            </h1>
 
-          <div />
-        </div>
+            <div />
+          </div>
+        )}
 
         <PlatformJourneyHeader
           isAuthenticated={isAuthenticated}
