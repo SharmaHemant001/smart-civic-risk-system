@@ -153,92 +153,52 @@ export default function HomePage() {
             </Link>
           </div>
 
-          {/* 🖥️ GLOWING PRODUCT SHOWCASE SCREENSHOT */}
-          <div className="w-full max-w-3xl mt-6 bg-slate-900/40 border border-indigo-500/20 rounded-3xl p-1.5 backdrop-blur-md shadow-[0_0_30px_rgba(99,102,241,0.15)] hover:shadow-[0_0_45px_rgba(99,102,241,0.35)] transition-all duration-300 ease-out hover:-translate-y-1 relative">
-            {/* Browser frame decoration */}
-            <div className="flex items-center justify-between px-4 py-1.5 border-b border-white/5 bg-slate-950/40 rounded-t-2xl">
-              <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-red-500/80" />
-                <span className="w-2 h-2 rounded-full bg-yellow-500/80" />
-                <span className="w-2 h-2 rounded-full bg-green-500/80" />
-              </div>
-              <div className="text-[9px] text-white/40 font-mono select-none px-6 py-0.5 rounded bg-black/40 border border-white/5 truncate max-w-xs">
-                civicguard.gov/dashboard
-              </div>
-              <div className="w-12" /> {/* spacer */}
-            </div>
-            {/* Mockup Dynamic Preview */}
-            <div className="relative rounded-b-2xl overflow-hidden bg-slate-950 border-t border-white/5 min-h-[400px]">
-              <DashboardPreview stats={stats} issues={issues} />
+          {/* SECTION TITLE: See CivicGuard In Action */}
+          <div className="w-full mt-12 space-y-6 text-center">
+            <h2 className="text-xl md:text-2xl font-black tracking-tight text-indigo-400 uppercase">
+              See CivicGuard In Action
+            </h2>
+            <p className="text-white/60 text-xs max-w-lg mx-auto leading-relaxed">
+              Simulate dispatches in the live interactive console preview below or click deep links to explore individual views.
+            </p>
+
+            {/* 3 Feature Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl mx-auto pt-2 text-left">
+              <Link href="/dashboard" className="p-4 bg-slate-900/60 border border-white/5 hover:border-indigo-500/30 rounded-2xl flex flex-col justify-between gap-3 transition hover:scale-[1.02] cursor-pointer group shadow-lg">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl bg-white/5 p-2 rounded-xl group-hover:bg-indigo-950/40 transition">📈</span>
+                  <div className="space-y-0.5">
+                    <h3 className="text-xs font-bold text-white group-hover:text-indigo-300 transition">Municipal Risk Radar</h3>
+                    <p className="text-[9px] text-slate-500 font-medium leading-normal">Detect highest-risk zones automatically.</p>
+                  </div>
+                </div>
+              </Link>
+
+              <Link href="/authority" className="p-4 bg-slate-900/60 border border-white/5 hover:border-indigo-500/30 rounded-2xl flex flex-col justify-between gap-3 transition hover:scale-[1.02] cursor-pointer group shadow-lg">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl bg-white/5 p-2 rounded-xl group-hover:bg-indigo-950/40 transition">🛡️</span>
+                  <div className="space-y-0.5">
+                    <h3 className="text-xs font-bold text-white group-hover:text-indigo-300 transition">Command Center</h3>
+                    <p className="text-[9px] text-slate-500 font-medium leading-normal">Prioritize interventions and allocate resources.</p>
+                  </div>
+                </div>
+              </Link>
+
+              <Link href="/authority/forecast" className="p-4 bg-slate-900/60 border border-white/5 hover:border-indigo-500/30 rounded-2xl flex flex-col justify-between gap-3 transition hover:scale-[1.02] cursor-pointer group shadow-lg">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl bg-white/5 p-2 rounded-xl group-hover:bg-indigo-950/40 transition">🔮</span>
+                  <div className="space-y-0.5">
+                    <h3 className="text-xs font-bold text-white group-hover:text-indigo-300 transition">Forecast Planner</h3>
+                    <p className="text-[9px] text-slate-500 font-medium leading-normal">Simulate actions before deploying crews.</p>
+                  </div>
+                </div>
+              </Link>
             </div>
           </div>
 
-          {/* 🌐 PLATFORM OVERVIEW SECTION */}
-          <div className="w-full mt-10 flex flex-col gap-8 bg-slate-900/40 border border-white/5 rounded-3xl p-6 backdrop-blur-md shadow-2xl text-left">
-            {/* How CivicGuard Works */}
-            <div className="space-y-4">
-              <h3 className="text-xs font-black uppercase text-indigo-400 tracking-wider">How CivicGuard Works</h3>
-              <div className="grid grid-cols-1 md:grid-cols-5 gap-3 md:gap-4 items-stretch text-center text-xs font-bold">
-                {[
-                  { name: "Citizen Report", icon: "👥", desc: "Report hazards with GPS & photos", path: "/report" },
-                  { name: "Risk Analysis", icon: "⚖️", desc: "Process base risk calculations", path: "/dashboard" },
-                  { name: "Escalation Detection", icon: "🏛️", desc: "Track high-risk zone spikes", path: "/authority" },
-                  { name: "Action Recommendation", icon: "🔮", desc: "Simulate mitigation options", path: "/authority/forecast" },
-                  { name: "Risk Reduction", icon: "🚗", desc: "Optimize dispatch paths", path: "/driver" }
-                ].map((step) => (
-                  <Link
-                    key={step.path}
-                    href={step.path}
-                    className="p-4 bg-slate-950/60 border border-white/5 hover:border-indigo-500/30 rounded-2xl flex flex-col items-center justify-between gap-2 transition hover:scale-[1.02] cursor-pointer group shadow-lg"
-                  >
-                    <div className="text-xl bg-white/5 p-2 rounded-xl group-hover:bg-indigo-950/40 transition">
-                      {step.icon}
-                    </div>
-                    <span className="text-xs font-bold text-white group-hover:text-indigo-300 transition">
-                      {step.name}
-                    </span>
-                    <p className="text-[9px] text-slate-500 font-medium leading-normal mt-1">
-                      {step.desc}
-                    </p>
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            {/* Core Capabilities */}
-            <div className="space-y-4">
-              <h3 className="text-xs font-black uppercase text-indigo-400 tracking-wider">Core Capabilities</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="p-4 bg-slate-950/60 border border-white/5 rounded-2xl flex items-start gap-3">
-                  <span className="text-lg bg-indigo-500/10 p-2 rounded-xl text-indigo-300">📍</span>
-                  <div className="space-y-1">
-                    <h4 className="text-xs font-bold text-white">Risk Detection</h4>
-                    <p className="text-[10px] text-white/50 leading-relaxed">Identify emerging risk hotspots across municipal zones.</p>
-                  </div>
-                </div>
-                <div className="p-4 bg-slate-950/60 border border-white/5 rounded-2xl flex items-start gap-3">
-                  <span className="text-lg bg-rose-500/10 p-2 rounded-xl text-rose-300">🚨</span>
-                  <div className="space-y-1">
-                    <h4 className="text-xs font-bold text-white">Escalation Monitoring</h4>
-                    <p className="text-[10px] text-white/50 leading-relaxed">Detect growing incidents before they escalate into civic crises.</p>
-                  </div>
-                </div>
-                <div className="p-4 bg-slate-950/60 border border-white/5 rounded-2xl flex items-start gap-3">
-                  <span className="text-lg bg-amber-500/10 p-2 rounded-xl text-amber-300">🛠</span>
-                  <div className="space-y-1">
-                    <h4 className="text-xs font-bold text-white">Resource Allocation</h4>
-                    <p className="text-[10px] text-white/50 leading-relaxed">Recommend where municipal crews and resources should deploy.</p>
-                  </div>
-                </div>
-                <div className="p-4 bg-slate-950/60 border border-white/5 rounded-2xl flex items-start gap-3">
-                  <span className="text-lg bg-emerald-500/10 p-2 rounded-xl text-emerald-300">📉</span>
-                  <div className="space-y-1">
-                    <h4 className="text-xs font-bold text-white">Intervention Planning</h4>
-                    <p className="text-[10px] text-white/50 leading-relaxed">Simulate resolution actions before spending city resources.</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+          {/* Live Interactive Preview */}
+          <div className="w-full max-w-4xl mt-8 transition-all duration-300 relative">
+            <DashboardPreview />
           </div>
 
         </div>
