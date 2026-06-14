@@ -331,11 +331,49 @@ export default function Dashboard() {
     ? simState.cri 
     : (stats?.summary?.criScore ?? calculatedCRI);
 
-  const highestCriaArea = topAreas.length > 0 ? topAreas[0]._id : "None";
+  const topAreasToUse = useMemo(() => {
+    if (simState.active) {
+      return [
+        { _id: "Dwarka Sector 5", totalIssues: 18, criticalIssues: 6, escalations: 1, cri: simState.cri, trend: "↑ 12%" },
+        { _id: "Connaught Place", totalIssues: 12, criticalIssues: 5, escalations: 2, cri: Math.round(simState.cri * 0.9), trend: "↑ 8%" },
+        { _id: "Karol Bagh", totalIssues: 15, criticalIssues: 4, escalations: 1, cri: Math.round(simState.cri * 0.8), trend: "↑ 2%" },
+        { _id: "Saket", totalIssues: 24, criticalIssues: 8, escalations: 2, cri: Math.round(simState.cri * 0.7), trend: "↓ 4%" },
+        { _id: "Vasant Kunj", totalIssues: 8, criticalIssues: 1, escalations: 0, cri: Math.round(simState.cri * 0.5), trend: "↓ 6%" }
+      ];
+    }
+    return topAreas;
+  }, [simState.active, simState.cri, topAreas]);
+
+  const highestCriaArea = topAreasToUse.length > 0 ? topAreasToUse[0]._id : "None";
   const potentialReduction = cityCRI > 0 ? Math.round(cityCRI * 0.18) : 0;
 
   // SLA Watchlist logic (impending deadlines, max 5)
   const getSlaRiskWatchlist = () => {
+    if (simState.active) {
+      return [
+        {
+          issue: "Critical Sewer Blockage",
+          location: "Dwarka Sector 5",
+          hoursRemaining: 6,
+          probability: 82,
+          explanation: "SLA Breach Warning: Dwarka Sector 5 drainage blockages breach in 6 hours."
+        },
+        {
+          issue: "Critical Sewer Main",
+          location: "Connaught Place",
+          hoursRemaining: 12,
+          probability: 45,
+          explanation: "Pending assignation of field dispatch unit."
+        },
+        {
+          issue: "High Construction Hazard",
+          location: "Karol Bagh",
+          hoursRemaining: 24,
+          probability: 45,
+          explanation: "SLA status is OK with 24 hours remaining."
+        }
+      ];
+    }
     const active = issues.filter(i => !["resolved", "invalid"].includes(i.status) && i.slaDeadline);
     const sorted = [...active].sort((a, b) => new Date(a.slaDeadline || 0).getTime() - new Date(b.slaDeadline || 0).getTime());
     return sorted.slice(0, 5).map(issue => {
@@ -354,7 +392,7 @@ export default function Dashboard() {
     });
   };
   const slaRiskWatchlist = getSlaRiskWatchlist();
-  const highRiskAreasCount = topAreas.filter(a => a.cri >= 80).length;
+  const highRiskAreasCount = topAreasToUse.filter(a => a.cri >= 80).length;
   const responseDelayRiskCount = slaRiskWatchlist.length;
 
   // Emergency Mode state check
@@ -362,6 +400,40 @@ export default function Dashboard() {
 
   // Today's Action Plan (top 3 recommended actions today formatted cleanly with dynamic explainability)
   const getRecommendedActions = () => {
+    if (simState.active) {
+      const actions = [];
+      if (simState.recommendation) {
+        actions.push({
+          title: "Deploy Emergency Response Team B",
+          priorityScore: 99,
+          reduction: 15,
+          priority: "Critical",
+          why: simState.alert || "High-risk drainage blockages in Dwarka Sector 5.",
+          expectedImpact: "CRI -15%"
+        });
+      }
+      
+      actions.push({
+        title: "Clear Drainage Conduit – Dwarka Sector 5",
+        priorityScore: simState.cri,
+        reduction: 10,
+        priority: "Critical",
+        why: `Automated GIS telemetry detected spatiotemporal escalation risk during active rainfall.`,
+        expectedImpact: "CRI -10%"
+      });
+      
+      actions.push({
+        title: "Repair Sewer Main – Connaught Place",
+        priorityScore: Math.round(simState.cri * 0.9),
+        reduction: 8,
+        priority: "High",
+        why: `27 unresolved community report validations, outstanding for 2 days.`,
+        expectedImpact: "CRI -8%"
+      });
+      
+      return actions.slice(0, 3);
+    }
+
     const active = issues.filter(i => !["resolved", "invalid"].includes(i.status));
     const sorted = [...active].sort((a, b) => (b.finalRisk || b.riskValue || 0) - (a.finalRisk || a.riskValue || 0));
     return sorted.slice(0, 3).map((issue) => {
@@ -552,10 +624,10 @@ export default function Dashboard() {
                 <div className="space-y-1.5">
                   <span className="text-[10px] text-[#A78BFA] font-bold uppercase tracking-wider block">📍 Highest Risk Area</span>
                   <h3 className="text-lg font-black text-white truncate">
-                    {simState.active && simState.cri >= 89 ? "Dwarka Sector 5" : (topAreas[0]?._id || "Saket")}
+                    {simState.active && simState.cri >= 89 ? "Dwarka Sector 5" : (topAreasToUse[0]?._id || "Saket")}
                   </h3>
                   <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-red-500/10 border border-red-500/20 text-red-400 text-[9px] font-bold">
-                    CRI: {simState.active ? simState.cri : (topAreas[0]?.cri || 0)} (Critical)
+                    CRI: {simState.active ? simState.cri : (topAreasToUse[0]?.cri || 0)} (Critical)
                   </div>
                 </div>
 
@@ -565,7 +637,7 @@ export default function Dashboard() {
                   <p className="text-slate-300 leading-relaxed font-medium text-[11px]">
                     {simState.active && simState.alert
                       ? simState.alert
-                      : `This sector exhibits the highest concentration of active infrastructure hazards (${topAreas[0]?.totalIssues ?? 0} active, ${topAreas[0]?.criticalIssues ?? 0} critical).`}
+                      : `This sector exhibits the highest concentration of active infrastructure hazards (${topAreasToUse[0]?.totalIssues ?? 0} active, ${topAreasToUse[0]?.criticalIssues ?? 0} critical).`}
                   </p>
                 </div>
 
@@ -619,7 +691,7 @@ export default function Dashboard() {
                 Awaiting map telemetry coordinates.
               </div>
             ) : (
-              <MapComponent issues={issues} areas={topAreas} weather={weather} route={null} />
+              <MapComponent issues={issues} areas={topAreasToUse} weather={weather} route={null} />
             )}
           </div>
         </div>
@@ -696,10 +768,10 @@ export default function Dashboard() {
             <div className="space-y-3.5">
               {loadingAreas ? (
                 <div className="text-slate-400 text-sm py-8 text-center animate-pulse">Loading area telemetry...</div>
-              ) : topAreas.length === 0 ? (
+              ) : topAreasToUse.length === 0 ? (
                 renderEmptyState("No active neighborhood risk reports.")
               ) : (
-                topAreas.slice(0, 5).map((area: any, index: number) => {
+                topAreasToUse.slice(0, 5).map((area: any, index: number) => {
                   const cri = area.cri;
                   const colorClass = cri >= 80 ? "bg-red-500" : cri >= 50 ? "bg-orange-500" : "bg-emerald-500";
                   const textClass = cri >= 80 ? "text-red-400" : cri >= 50 ? "text-orange-400" : "text-emerald-400";

@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useEffect, useState, useMemo } from "react";
 import API from "../utils/api";
+import DashboardPreview from "@/components/DashboardPreview";
 
 export default function HomePage() {
   const [stats, setStats] = useState<any>(null);
@@ -179,13 +180,9 @@ export default function HomePage() {
               </div>
               <div className="w-12" /> {/* spacer */}
             </div>
-            {/* Mockup Image */}
-            <div className="relative rounded-b-2xl overflow-hidden aspect-[16/10] bg-slate-950 border-t border-white/5">
-              <img
-                src="/images/dashboard_mockup.png"
-                alt="CivicGuard Executive Dashboard"
-                className="w-full h-full object-cover select-none"
-              />
+            {/* Mockup Dynamic Preview */}
+            <div className="relative rounded-b-2xl overflow-hidden bg-slate-950 border-t border-white/5 min-h-[400px]">
+              <DashboardPreview stats={stats} issues={issues} />
             </div>
           </div>
 

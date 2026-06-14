@@ -54,10 +54,18 @@ export default function LoginModal({
     };
 
     try {
-      const response = await API.post("/auth/login", {
-        idToken: "mock-google-id-token",
-        role: localSelectedRole,
-      });
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Login request timed out")), 2500)
+      );
+
+      const response = await Promise.race([
+        API.post("/auth/login", {
+          idToken: "mock-google-id-token",
+          role: localSelectedRole,
+        }),
+        timeoutPromise,
+      ]) as any;
+
       const { accessToken, user: backendUser } = response.data;
 
       const updatedUser = {
