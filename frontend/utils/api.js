@@ -17,6 +17,22 @@ const API = axios.create({
 
 API.interceptors.request.use((config) => {
   if (typeof window !== "undefined") {
+    const isDemo = localStorage.getItem("demoMode") === "true";
+    if (isDemo) {
+      const url = config.url || "";
+      if (
+        url.includes("/authority") ||
+        url.includes("/issues") ||
+        url.includes("/escalations") ||
+        url.includes("/routes") ||
+        url.includes("/auth")
+      ) {
+        console.log("DEMO MODE ACTIVE");
+        console.log("API SKIPPED", url);
+        throw new Error("DEMO_MODE_SKIP_REQUEST");
+      }
+    }
+
     const token = localStorage.getItem("accessToken");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -28,6 +44,14 @@ API.interceptors.request.use((config) => {
 API.interceptors.response.use(
   (response) => response,
   async (error) => {
+    if (error.message === "DEMO_MODE_SKIP_REQUEST") {
+      return Promise.reject(error);
+    }
+    
+    if (typeof window !== "undefined" && localStorage.getItem("demoMode") === "true") {
+      return Promise.reject(error);
+    }
+
     const originalRequest = error.config;
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;

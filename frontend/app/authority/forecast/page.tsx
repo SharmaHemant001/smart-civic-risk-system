@@ -167,6 +167,20 @@ export default function ForecastPage() {
 
   // Load Initial Dashboard Metrics
   const loadForecastData = async () => {
+    const isDemoMode = typeof window !== "undefined" ? localStorage.getItem("demoMode") !== "false" : true;
+    if (isDemoMode) {
+      console.log("Forecast Demo Mode Active - Skipping API requests");
+      setCityData(MOCK_FORECAST_CITY);
+      setRecommendations(MOCK_FORECAST_RECOMMENDATIONS);
+      setAreaForecasts(MOCK_FORECAST_AREAS);
+      setAlerts(MOCK_FORECAST_ALERTS);
+      setActiveIssues(MOCK_FORECAST_ISSUES);
+      setSimSelectedIds([]);
+      setSimResults(null);
+      setLoading(false);
+      console.log("Forecast Demo Data Loaded");
+      return;
+    }
     setLoading(true);
     try {
       const [cityRes, areasRes, alertsRes, issuesRes] = await Promise.all([
@@ -286,6 +300,18 @@ export default function ForecastPage() {
     if (!authChecked) return;
     const fetchHeatmap = async () => {
       setMapLoading(true);
+      const isDemoMode = typeof window !== "undefined" ? localStorage.getItem("demoMode") !== "false" : true;
+      if (isDemoMode) {
+        setHeatmapPoints([
+          [28.5921, 77.0460, 0.9],
+          [28.5244, 77.1933, 0.7],
+          [28.5168, 77.1998, 0.4],
+          [28.6505, 77.2028, 0.7],
+          [28.5700, 77.2200, 0.8]
+        ]);
+        setMapLoading(false);
+        return;
+      }
       try {
         const res = await API.get(`/authority/forecast/heatmap?day=${mapDay}&weather=${weather}`);
         setHeatmapPoints(res.data);
@@ -312,6 +338,34 @@ export default function ForecastPage() {
   // Execute Intervention Planner Simulation
   const runSimulation = async (selectedIds: string[]) => {
     setSimLoading(true);
+    const isDemoMode = typeof window !== "undefined" ? localStorage.getItem("demoMode") !== "false" : true;
+    if (isDemoMode) {
+      const baseRisk = MOCK_FORECAST_CITY.forecasts["30d"].totalRisk;
+      const resolvedCount = selectedIds.length;
+      const projectedCityRisk30d = Math.max(10, baseRisk - (resolvedCount * 14));
+      setSimResults({
+        originalCityRisk30d: baseRisk,
+        projectedCityRisk30d,
+        improvement: baseRisk - projectedCityRisk30d,
+        cityForecast: {
+          forecasts: {
+            "0d": { averageRisk: 84, criticalCount: 2, totalRisk: 84, confidence: 95 },
+            "7d": { averageRisk: Math.round(90 * (projectedCityRisk30d / baseRisk)), criticalCount: Math.max(0, 3 - resolvedCount), totalRisk: Math.round(90 * (projectedCityRisk30d / baseRisk)), confidence: 90 },
+            "14d": { averageRisk: Math.round(94 * (projectedCityRisk30d / baseRisk)), criticalCount: Math.max(0, 4 - resolvedCount), totalRisk: Math.round(94 * (projectedCityRisk30d / baseRisk)), confidence: 85 },
+            "30d": { averageRisk: Math.round(projectedCityRisk30d / 5), criticalCount: Math.max(0, 5 - resolvedCount), totalRisk: projectedCityRisk30d, confidence: 80 }
+          },
+          growthPercent: Math.round(((projectedCityRisk30d - 84) / 84) * 100 * 10) / 10,
+          assumptions: {
+            weather: weather,
+            activeIssues: Math.max(0, 5 - resolvedCount),
+            criticalIssues: Math.max(0, 2 - resolvedCount),
+            horizon: "30 Days"
+          }
+        }
+      });
+      setSimLoading(false);
+      return;
+    }
     try {
       const res = await API.post("/authority/forecast/intervention", {
         ids: selectedIds,

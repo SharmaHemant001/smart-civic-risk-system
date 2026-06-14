@@ -329,16 +329,18 @@ export default function AuthorityDashboard() {
   }, [simulatorSelectedIds, issues]);
 
   const loadEscalations = async () => {
+    const isDemoMode = typeof window !== "undefined" ? localStorage.getItem("demoMode") !== "false" : true;
+    if (isDemoMode) {
+      setEscalations(MOCK_AUTHORITY_ESCALATIONS);
+      setEscalationsLoading(false);
+      return;
+    }
     try {
       const res = await API.get("/escalations/recent");
       setEscalations(res.data);
     } catch (err) {
       console.error("Failed to load escalations:", err);
-      if (isDemo) {
-        setEscalations(MOCK_AUTHORITY_ESCALATIONS);
-      } else {
-        setEscalations([]);
-      }
+      setEscalations([]);
     } finally {
       setEscalationsLoading(false);
     }
@@ -346,6 +348,14 @@ export default function AuthorityDashboard() {
 
   const handleCheckEscalations = async () => {
     setCheckingEscalations(true);
+    const isDemoMode = typeof window !== "undefined" ? localStorage.getItem("demoMode") !== "false" : true;
+    if (isDemoMode) {
+      setTimeout(() => {
+        setCheckingEscalations(false);
+        console.log("Mock Check Escalations Complete");
+      }, 500);
+      return;
+    }
     try {
       await API.post("/escalations/check");
       await loadEscalations();
@@ -415,6 +425,23 @@ export default function AuthorityDashboard() {
 
   // Load dashboard data
   const loadDashboardData = async () => {
+    const isDemoMode = typeof window !== "undefined" ? localStorage.getItem("demoMode") !== "false" : true;
+    if (isDemoMode) {
+      console.log("Authority Demo Mode Active - Skipping API requests");
+      setStats(MOCK_AUTHORITY_STATS);
+      setIssues(MOCK_AUTHORITY_ISSUES);
+      setAreas(MOCK_AUTHORITY_AREAS);
+      setAnalytics(MOCK_AUTHORITY_ANALYTICS);
+      setEscalations(MOCK_AUTHORITY_ESCALATIONS);
+      setEscalationsLoading(false);
+      if (simulatorSelectedIds.length === 0) {
+        setSimulatorSelectedIds(["demo-1", "demo-5", "demo-4"]);
+      }
+      setSelectedIds([]);
+      setLoading(false);
+      console.log("Authority Demo Data Loaded");
+      return;
+    }
     setTimeout(() => setLoading(true), 0);
     try {
       // Build query string
@@ -513,6 +540,24 @@ export default function AuthorityDashboard() {
     if (!authChecked) return;
     const runSimulation = async () => {
       setTimeout(() => setSimLoading(true), 0);
+      const isDemoMode = typeof window !== "undefined" ? localStorage.getItem("demoMode") !== "false" : true;
+      if (isDemoMode) {
+        const resolvedCount = simulatorSelectedIds.length;
+        const currentCityRisk = 84;
+        const projectedCityRisk = Math.max(10, currentCityRisk - (resolvedCount * 12));
+        setSimResults({
+          currentCityRisk,
+          projectedCityRisk,
+          riskReduction: currentCityRisk - projectedCityRisk,
+          originalAreaForecasts: MOCK_AUTHORITY_AREAS,
+          projectedAreaForecasts: MOCK_AUTHORITY_AREAS.map(a => ({
+            ...a,
+            cri: Math.max(10, a.cri - (resolvedCount * 10))
+          }))
+        });
+        setSimLoading(false);
+        return;
+      }
       try {
         const idsStr = simulatorSelectedIds.join(",");
         const res = await API.get(`/authority/impact-simulation?ids=${idsStr}&weather=${weather}`);
@@ -549,6 +594,23 @@ export default function AuthorityDashboard() {
     if (!bulkAction || selectedIds.length === 0) return;
     setBulkLoading(true);
     setShowBulkModal(false);
+    const isDemoMode = typeof window !== "undefined" ? localStorage.getItem("demoMode") !== "false" : true;
+    if (isDemoMode) {
+      setIssues(prev =>
+        prev.map(issue =>
+          selectedIds.includes(issue._id)
+            ? { ...issue, status: bulkAction === "resolved" ? "resolved" : "in-progress" }
+            : issue
+        )
+      );
+      if (bulkAction === "resolved") {
+        setSimulatorSelectedIds(prev => prev.filter(id => !selectedIds.includes(id)));
+      }
+      setSelectedIds([]);
+      setBulkLoading(false);
+      setBulkAction(null);
+      return;
+    }
     try {
       await API.post("/authority/bulk-update", {
         ids: selectedIds,

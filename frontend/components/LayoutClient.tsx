@@ -77,6 +77,11 @@ export default function LayoutClient({ children }: any) {
   // Route interceptor for direct visits / refreshes on protected URLs
   useEffect(() => {
     if (typeof window !== "undefined") {
+      const isDemo = localStorage.getItem("demoMode") === "true";
+      if (isDemo) {
+        return; // Bypass validation/guards in demo mode entirely
+      }
+
       const token = localStorage.getItem("accessToken");
       const isTokenValid = token && token !== "null" && token !== "undefined";
       
@@ -131,7 +136,7 @@ export default function LayoutClient({ children }: any) {
   };
 
   const allowedRoles = ["operator", "supervisor", "admin", "dispatcher", "manager", "fieldcrew"];
-  const isAuthorized = isAuthenticated && allowedRoles.includes(userRole.toLowerCase());
+  const isAuthorized = isDemoMode || (isAuthenticated && allowedRoles.includes(userRole.toLowerCase()));
   const isProtected = pathname.startsWith("/authority");
   const shouldHideContent = isProtected && !isAuthorized;
 

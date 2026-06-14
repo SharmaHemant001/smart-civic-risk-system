@@ -20,6 +20,24 @@ export default function HomePage() {
 
   useEffect(() => {
     const fetchStats = async () => {
+      const isDemoMode = typeof window !== "undefined" ? (localStorage.getItem("demoMode") !== "false") : true;
+      setIsDemo(isDemoMode);
+
+      if (isDemoMode) {
+        setIssues(MOCK_DEMO_ISSUES);
+        setStats({
+          summary: { total: 5, critical: 2, resolved: 0, active: 5, resolvedPercentage: 0, criScore: 84 },
+          platformHealth: { reportsToday: 2, activeHazards: 5, escalations: 1, protectedRoutes: 4, aiAccuracy: "94%" },
+          liveActivity: [
+            "🔴 Critical Alert: sewer reported in Dwarka (5m ago)",
+            "🔴 Critical Alert: sewer reported in Connaught Place (15m ago)",
+            "🔄 Forecast models synchronized with weather feed"
+          ]
+        });
+        setLoading(false);
+        return;
+      }
+
       try {
         const [statsRes, issuesRes] = await Promise.all([
           API.get("/issues/homepage-stats"),
@@ -28,46 +46,15 @@ export default function HomePage() {
         let statsData = statsRes.data;
         let issuesData = issuesRes.data;
 
-        const isDemoMode = typeof window !== "undefined" ? (localStorage.getItem("demoMode") !== "false") : true;
-        setIsDemo(isDemoMode);
-
-        if (isDemoMode && (!issuesData || issuesData.length === 0)) {
-          issuesData = MOCK_DEMO_ISSUES;
-          statsData = {
-            summary: { total: 5, critical: 2, resolved: 0, active: 5, resolvedPercentage: 0, criScore: 84 },
-            platformHealth: { reportsToday: 2, activeHazards: 5, escalations: 1, protectedRoutes: 4, aiAccuracy: "94%" },
-            liveActivity: [
-              "🔴 Critical Alert: sewer reported in Dwarka (5m ago)",
-              "🔴 Critical Alert: sewer reported in Connaught Place (15m ago)",
-              "🔄 Forecast models synchronized with weather feed"
-            ]
-          };
-        }
-
         setStats(statsData);
         setIssues(issuesData);
       } catch (err) {
         console.error("Failed to fetch homepage stats:", err);
-        const isDemoMode = typeof window !== "undefined" ? (localStorage.getItem("demoMode") !== "false") : true;
-        setIsDemo(isDemoMode);
-        if (isDemoMode) {
-          setIssues(MOCK_DEMO_ISSUES);
-          setStats({
-            summary: { total: 5, critical: 2, resolved: 0, active: 5, resolvedPercentage: 0, criScore: 84 },
-            platformHealth: { reportsToday: 2, activeHazards: 5, escalations: 1, protectedRoutes: 4, aiAccuracy: "94%" },
-            liveActivity: [
-              "🔴 Critical Alert: sewer reported in Dwarka (5m ago)",
-              "🔴 Critical Alert: sewer reported in Connaught Place (15m ago)",
-              "🔄 Forecast models synchronized with weather feed"
-            ]
-          });
-        } else {
-          setStats({
-            summary: { total: 0, critical: 0, resolved: 0, active: 0, resolvedPercentage: 0, criScore: 0 },
-            platformHealth: { reportsToday: 0, activeHazards: 0, escalations: 0, protectedRoutes: 0, aiAccuracy: "N/A" },
-            liveActivity: []
-          });
-        }
+        setStats({
+          summary: { total: 0, critical: 0, resolved: 0, active: 0, resolvedPercentage: 0, criScore: 0 },
+          platformHealth: { reportsToday: 0, activeHazards: 0, escalations: 0, protectedRoutes: 0, aiAccuracy: "N/A" },
+          liveActivity: []
+        });
       } finally {
         setLoading(false);
       }

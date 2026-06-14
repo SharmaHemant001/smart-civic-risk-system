@@ -53,64 +53,24 @@ export default function LoginModal({
       profilePhoto: ""
     };
 
-    try {
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("Login request timed out")), 2500)
-      );
+    // Store session purely locally
+    localStorage.setItem("demoMode", "true");
+    localStorage.setItem("role", localSelectedRole);
+    localStorage.setItem("token", `demo-token-${localSelectedRole}`);
+    localStorage.setItem("accessToken", `demo-token-${localSelectedRole}`);
+    localStorage.setItem("displayName", roleDisplayNames[localSelectedRole]);
+    localStorage.setItem("authType", "demo");
+    localStorage.setItem("userRole", localSelectedRole);
+    localStorage.setItem("isAuthenticated", "true");
+    localStorage.setItem("user", JSON.stringify(localMockUser));
 
-      const response = await Promise.race([
-        API.post("/auth/login", {
-          idToken: "mock-google-id-token",
-          role: localSelectedRole,
-        }),
-        timeoutPromise,
-      ]) as any;
+    console.log("Session Created: Demo Mode = true (100% Frontend-Only)");
 
-      const { accessToken, user: backendUser } = response.data;
+    // Dispatch login event
+    window.dispatchEvent(new Event("civicguard-auth"));
 
-      const updatedUser = {
-        ...backendUser,
-        displayName: roleDisplayNames[localSelectedRole],
-        email: `demo-${localSelectedRole}@civicguard.gov`,
-        role: localSelectedRole,
-      };
-
-      localStorage.setItem("demoMode", "true");
-      localStorage.setItem("role", localSelectedRole);
-      localStorage.setItem("displayName", roleDisplayNames[localSelectedRole]);
-      localStorage.setItem("authType", "demo");
-      localStorage.setItem("accessToken", accessToken);
-      localStorage.setItem("userRole", localSelectedRole);
-      localStorage.setItem("isAuthenticated", "true");
-      localStorage.setItem("user", JSON.stringify(updatedUser));
-
-      console.log("Session Created: Demo Mode = true (Backend Connected)");
-
-      // Dispatch login event
-      window.dispatchEvent(new Event("civicguard-auth"));
-
-      onSuccess(localSelectedRole);
-    } catch (err: any) {
-      console.warn("Backend authentication failed, falling back to local client-side demo session:", err);
-      
-      localStorage.setItem("demoMode", "true");
-      localStorage.setItem("role", localSelectedRole);
-      localStorage.setItem("displayName", roleDisplayNames[localSelectedRole]);
-      localStorage.setItem("authType", "demo");
-      localStorage.setItem("accessToken", `demo-${localSelectedRole}`);
-      localStorage.setItem("userRole", localSelectedRole);
-      localStorage.setItem("isAuthenticated", "true");
-      localStorage.setItem("user", JSON.stringify(localMockUser));
-
-      console.log("Session Created: Demo Mode = true (Local Fallback Active)");
-
-      // Dispatch login event
-      window.dispatchEvent(new Event("civicguard-auth"));
-
-      onSuccess(localSelectedRole);
-    } finally {
-      setIsSubmitting(false);
-    }
+    onSuccess(localSelectedRole);
+    setIsSubmitting(false);
   };
 
   return (

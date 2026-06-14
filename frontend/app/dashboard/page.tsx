@@ -223,6 +223,13 @@ export default function Dashboard() {
   // Fetch Issues from DB
   useEffect(() => {
     const fetchIssues = async () => {
+      const isDemoMode = typeof window !== "undefined" ? localStorage.getItem("demoMode") !== "false" : true;
+      if (isDemoMode) {
+        setIssues(MOCK_DEMO_ISSUES);
+        console.log("Demo Mode (Frontend-Only):", isDemoMode);
+        console.log("Dashboard Data Loaded (Mock Issues)");
+        return;
+      }
       try {
         const res = await API.get(`/issues?weather=${weather}`);
         let data = res.data;
@@ -257,6 +264,15 @@ export default function Dashboard() {
   // Fetch Top Areas & Homepage Stats
   useEffect(() => {
     const fetchTopAreas = async () => {
+      const isDemoMode = typeof window !== "undefined" ? localStorage.getItem("demoMode") !== "false" : true;
+      if (isDemoMode) {
+        setTopAreas(MOCK_DEMO_TOP_AREAS);
+        setStats(MOCK_DEMO_STATS);
+        setLoadingAreas(false);
+        console.log("Demo Mode (Frontend-Only):", isDemoMode);
+        console.log("Dashboard Data Loaded (Mock Stats/Areas)");
+        return;
+      }
       try {
         const [areasRes, statsRes] = await Promise.all([
           API.get(`/issues/top-areas?weather=${weather}`),
