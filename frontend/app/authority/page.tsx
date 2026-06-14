@@ -432,31 +432,60 @@ export default function AuthorityDashboard() {
         API.get(`/authority/analytics?${weatherParam}`),
       ]);
 
-      setStats(statsRes.data);
-      setIssues(issuesRes.data);
-      setAreas(areasRes.data);
-      setAnalytics(analyticsRes.data);
+      const statsData = statsRes.data;
+      const issuesData = issuesRes.data;
+      const areasData = areasRes.data;
+      const analyticsData = analyticsRes.data;
+
+      const isCollectionEmpty = !statsData || !issuesData || issuesData.length === 0 || !areasData || areasData.length === 0;
+
+      if (isDemo && isCollectionEmpty) {
+        console.log("Authority API Failed");
+        console.log("Injecting Demo Dataset");
+        setStats(MOCK_AUTHORITY_STATS);
+        setIssues(MOCK_AUTHORITY_ISSUES);
+        setAreas(MOCK_AUTHORITY_AREAS);
+        setAnalytics(MOCK_AUTHORITY_ANALYTICS);
+        setEscalations(MOCK_AUTHORITY_ESCALATIONS);
+        setEscalationsLoading(false);
+        if (simulatorSelectedIds.length === 0) {
+          setSimulatorSelectedIds(["demo-1", "demo-5", "demo-4"]);
+        }
+        setLoading(false);
+        console.log("Authority Demo Data Loaded");
+        return;
+      }
+
+      setStats(statsData);
+      setIssues(issuesData);
+      setAreas(areasData);
+      setAnalytics(analyticsData);
       setSelectedIds([]); // Reset multi-selects
 
       // Auto pre-select top 5 highest-risk active issues if simulatorSelectedIds is empty
-      if (issuesRes.data && issuesRes.data.length > 0 && simulatorSelectedIds.length === 0) {
-        const active = issuesRes.data.filter((i: any) => !["resolved", "invalid"].includes(i.status));
+      if (issuesData && issuesData.length > 0 && simulatorSelectedIds.length === 0) {
+        const active = issuesData.filter((i: any) => !["resolved", "invalid"].includes(i.status));
         if (active.length > 0) {
           const sorted = [...active].sort((a: any, b: any) => (b.finalRisk || b.riskValue || 0) - (a.finalRisk || a.riskValue || 0));
           const top5 = sorted.slice(0, 5).map((i: any) => i._id);
           setSimulatorSelectedIds(top5);
         }
       }
-    } catch (err) {
-      console.error("Failed to load authority command center metrics:", err);
+    } catch (err: any) {
+      console.log("Authority API Failed");
       if (isDemo) {
+        console.log("Injecting Demo Dataset");
         setStats(MOCK_AUTHORITY_STATS);
         setIssues(MOCK_AUTHORITY_ISSUES);
         setAreas(MOCK_AUTHORITY_AREAS);
         setAnalytics(MOCK_AUTHORITY_ANALYTICS);
+        setEscalations(MOCK_AUTHORITY_ESCALATIONS);
+        setEscalationsLoading(false);
         if (simulatorSelectedIds.length === 0) {
           setSimulatorSelectedIds(["demo-1", "demo-5", "demo-4"]);
         }
+        setLoading(false);
+        console.log("Authority Demo Data Loaded");
       } else {
         setStats(null);
         setIssues([]);

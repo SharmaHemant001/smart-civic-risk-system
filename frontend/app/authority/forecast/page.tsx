@@ -176,22 +176,17 @@ export default function ForecastPage() {
         API.get(`/authority/issues?weather=${weather}`),
       ]);
 
-      setCityData(cityRes.data.cityForecast);
-      setRecommendations(cityRes.data.recommendations);
-      setAreaForecasts(areasRes.data);
-      setAlerts(alertsRes.data);
-      
-      const activeOnly = issuesRes.data.filter(
-        (i: any) => !["resolved", "invalid"].includes(i.status)
-      );
-      setActiveIssues(activeOnly);
+      const cityDataVal = cityRes.data?.cityForecast;
+      const recommendationsVal = cityRes.data?.recommendations;
+      const areasVal = areasRes.data;
+      const alertsVal = alertsRes.data;
+      const issuesVal = issuesRes.data;
 
-      // Reset simulator when weather changes
-      setSimSelectedIds([]);
-      setSimResults(null);
-    } catch (err) {
-      console.error("Failed to load forecasting metrics:", err);
-      if (isDemo) {
+      const isCollectionEmpty = !cityDataVal || !recommendationsVal || !areasVal || areasVal.length === 0 || !issuesVal;
+
+      if (isDemo && isCollectionEmpty) {
+        console.log("Authority API Failed");
+        console.log("Injecting Demo Dataset");
         setCityData(MOCK_FORECAST_CITY);
         setRecommendations(MOCK_FORECAST_RECOMMENDATIONS);
         setAreaForecasts(MOCK_FORECAST_AREAS);
@@ -199,6 +194,37 @@ export default function ForecastPage() {
         setActiveIssues(MOCK_FORECAST_ISSUES);
         setSimSelectedIds([]);
         setSimResults(null);
+        setLoading(false);
+        console.log("Authority Demo Data Loaded");
+        return;
+      }
+
+      setCityData(cityDataVal);
+      setRecommendations(recommendationsVal);
+      setAreaForecasts(areasVal);
+      setAlerts(alertsVal);
+      
+      const activeOnly = issuesVal.filter(
+        (i: any) => !["resolved", "invalid"].includes(i.status)
+      );
+      setActiveIssues(activeOnly);
+
+      // Reset simulator when weather changes
+      setSimSelectedIds([]);
+      setSimResults(null);
+    } catch (err: any) {
+      console.log("Authority API Failed");
+      if (isDemo) {
+        console.log("Injecting Demo Dataset");
+        setCityData(MOCK_FORECAST_CITY);
+        setRecommendations(MOCK_FORECAST_RECOMMENDATIONS);
+        setAreaForecasts(MOCK_FORECAST_AREAS);
+        setAlerts(MOCK_FORECAST_ALERTS);
+        setActiveIssues(MOCK_FORECAST_ISSUES);
+        setSimSelectedIds([]);
+        setSimResults(null);
+        setLoading(false);
+        console.log("Authority Demo Data Loaded");
       } else {
         setCityData(null);
         setRecommendations([]);

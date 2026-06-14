@@ -97,7 +97,7 @@ export default function LoginModal({
       localStorage.setItem("role", localSelectedRole);
       localStorage.setItem("displayName", roleDisplayNames[localSelectedRole]);
       localStorage.setItem("authType", "demo");
-      localStorage.setItem("accessToken", "mock-local-demo-token-12345");
+      localStorage.setItem("accessToken", `demo-${localSelectedRole}`);
       localStorage.setItem("userRole", localSelectedRole);
       localStorage.setItem("isAuthenticated", "true");
       localStorage.setItem("user", JSON.stringify(localMockUser));
